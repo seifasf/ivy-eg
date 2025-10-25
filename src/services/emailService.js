@@ -50,7 +50,7 @@ export const sendOrderConfirmation = async (orderData) => {
       city: orderData.customer.city,
       address: orderData.customer.address,
       order_items: orderItemsText,
-      order_total: `$${orderData.total.toFixed(2)}`,
+      order_total: `${orderData.total.toLocaleString()} EGP`,
       order_date: new Date().toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',

@@ -46,7 +46,9 @@ function Checkout() {
     governorate: '',
     city: '',
     address: '',
-    notes: ''
+    notes: '',
+    promoCode: '',
+    paymentMethod: 'cod'
   })
   const [errors, setErrors] = useState({})
   const [emailStatus, setEmailStatus] = useState(null)
@@ -95,6 +97,10 @@ function Checkout() {
 
     if (!formData.address.trim()) {
       newErrors.address = 'Address is required'
+    }
+
+    if (!formData.paymentMethod) {
+      newErrors.paymentMethod = 'Please select a payment method'
     }
 
     setErrors(newErrors)
@@ -184,10 +190,34 @@ function Checkout() {
             )}
             
             <div className="success-details">
-              <p><strong>Order Total:</strong> ${getCartTotal().toFixed(2)}</p>
+              <p><strong>Order Total:</strong> {getCartTotal().toLocaleString()} EGP</p>
+              {formData.promoCode && (
+                <p><strong>Promo Code:</strong> {formData.promoCode}</p>
+              )}
+              <p><strong>Payment Method:</strong> {
+                formData.paymentMethod === 'cod' ? 'Cash on Delivery' :
+                formData.paymentMethod === 'telda' ? 'Telda (ivyeg)' :
+                formData.paymentMethod === 'instapay' ? 'InstaPay' : ''
+              }</p>
               <p><strong>Delivery to:</strong> {formData.governorate}, {formData.city}</p>
               <p><strong>Contact:</strong> {formData.phone}</p>
             </div>
+            
+            {formData.paymentMethod === 'telda' && (
+              <div className="payment-instructions">
+                <h4>📱 Telda Payment Instructions</h4>
+                <p>Please send <strong>{getCartTotal().toLocaleString()} EGP</strong> to:</p>
+                <p className="payment-info-highlight">Username: <strong>ivyeg</strong></p>
+              </div>
+            )}
+            
+            {formData.paymentMethod === 'instapay' && (
+              <div className="payment-instructions">
+                <h4>🏦 InstaPay Payment Instructions</h4>
+                <p>Please send <strong>{getCartTotal().toLocaleString()} EGP</strong> to:</p>
+                <p className="payment-info-highlight">Card: <strong>1234 5678 9012 3456</strong></p>
+              </div>
+            )}
             
             <div className="delivery-message">
               <h3>What happens next?</h3>
@@ -346,6 +376,96 @@ function Checkout() {
                   rows="3"
                 />
               </div>
+
+                      <div className="form-group">
+                        <label htmlFor="promoCode" className="form-label">
+                          <span>Promo Code (Optional)</span>
+                        </label>
+                        <div className="promo-input-wrapper">
+                          <input
+                            type="text"
+                            id="promoCode"
+                            name="promoCode"
+                            value={formData.promoCode}
+                            onChange={handleChange}
+                            className="form-input promo-input"
+                            placeholder="Enter your promo code"
+                          />
+                          {formData.promoCode && (
+                            <div className="promo-success-animation">
+                              <svg className="promo-checkmark" viewBox="0 0 52 52">
+                                <circle className="promo-checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                                <path className="promo-checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                        {formData.promoCode && (
+                          <p className="promo-info">
+                            <span className="promo-spark">✨</span> 
+                            Promo code will be verified at checkout
+                          </p>
+                        )}
+                      </div>
+            </div>
+
+            <div className="form-section">
+              <h3 className="form-section-title">Payment Method</h3>
+              
+              <div className="payment-methods">
+                <label className={`payment-option ${formData.paymentMethod === 'cod' ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="cod"
+                    checked={formData.paymentMethod === 'cod'}
+                    onChange={handleChange}
+                  />
+                  <div className="payment-content">
+                    <div className="payment-icon">💵</div>
+                    <div className="payment-details">
+                      <h4>Cash on Delivery (COD)</h4>
+                      <p>Pay when you receive your order</p>
+                    </div>
+                  </div>
+                </label>
+
+                <label className={`payment-option ${formData.paymentMethod === 'telda' ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="telda"
+                    checked={formData.paymentMethod === 'telda'}
+                    onChange={handleChange}
+                  />
+                  <div className="payment-content">
+                    <div className="payment-icon">💳</div>
+                    <div className="payment-details">
+                      <h4>Telda</h4>
+                      <p>Send <strong>{getCartTotal().toLocaleString()} EGP</strong> to username: <strong className="payment-username">ivyeg</strong></p>
+                    </div>
+                  </div>
+                </label>
+
+                <label className={`payment-option ${formData.paymentMethod === 'instapay' ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="instapay"
+                    checked={formData.paymentMethod === 'instapay'}
+                    onChange={handleChange}
+                  />
+                  <div className="payment-content">
+                    <div className="payment-icon">🏦</div>
+                    <div className="payment-details">
+                      <h4>InstaPay</h4>
+                      <p>Send <strong>{getCartTotal().toLocaleString()} EGP</strong> to card: <strong className="payment-card">1234 5678 9012 3456</strong></p>
+                      <p className="payment-note">Replace with your actual InstaPay card number</p>
+                    </div>
+                  </div>
+                </label>
+              </div>
+              {errors.paymentMethod && <span className="error-message">{errors.paymentMethod}</span>}
             </div>
 
             <button 
@@ -353,7 +473,7 @@ function Checkout() {
               className="btn-place-order"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Processing Order...' : `Place Order - $${getCartTotal().toFixed(2)}`}
+              {isSubmitting ? 'Processing Order...' : `Place Order - ${getCartTotal().toLocaleString()} EGP`}
             </button>
           </form>
 
@@ -365,10 +485,13 @@ function Checkout() {
                 <div key={item.id} className="summary-item">
                   <div className="summary-item-info">
                     <span className="summary-item-name">{item.name}</span>
-                    <span className="summary-item-qty">x{item.quantity}</span>
+                    <div className="summary-item-details">
+                      {item.selectedSize && <span className="summary-item-size">Size: {item.selectedSize}</span>}
+                      <span className="summary-item-qty">Qty: {item.quantity}</span>
+                    </div>
                   </div>
                   <span className="summary-item-price">
-                    ${(parseFloat(item.price.replace('$', '')) * item.quantity).toFixed(2)}
+                    {(parseFloat(item.price.replace(/[,\sEGP]/g, '')) * item.quantity).toLocaleString()} EGP
                   </span>
                 </div>
               ))}
@@ -378,7 +501,7 @@ function Checkout() {
 
             <div className="summary-total">
               <span>Total</span>
-              <span className="total-amount">${getCartTotal().toFixed(2)}</span>
+              <span className="total-amount">{getCartTotal().toLocaleString()} EGP</span>
             </div>
 
             <div className="summary-note">

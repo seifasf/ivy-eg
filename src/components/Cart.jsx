@@ -63,6 +63,9 @@ function Cart() {
                       </div>
                       <div className="cart-item-details">
                         <h4 className="cart-item-name">{item.name}</h4>
+                        {item.selectedSize && (
+                          <p className="cart-item-size">Size: {item.selectedSize}</p>
+                        )}
                         <p className="cart-item-price">{item.price}</p>
                         <div className="cart-item-quantity">
                           <button
@@ -97,7 +100,7 @@ function Cart() {
               <div className="cart-footer">
                 <div className="cart-total">
                   <span>Total:</span>
-                  <span className="total-amount">${getCartTotal().toFixed(2)}</span>
+                  <span className="total-amount">{getCartTotal().toLocaleString()} EGP</span>
                 </div>
                 <button className="checkout-btn" onClick={handleCheckout}>
                   Proceed to Checkout

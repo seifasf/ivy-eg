@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
-import { HiUser, HiMail, HiPencil, HiPhone, HiLocationMarker, HiClock, HiCheckCircle } from 'react-icons/hi'
-import { FaInstagram, FaTwitter, FaLinkedin } from 'react-icons/fa'
+import { HiUser, HiMail, HiPencil, HiCheckCircle } from 'react-icons/hi'
+import { FaInstagram, FaTiktok } from 'react-icons/fa'
+import { BiLink } from 'react-icons/bi'
 import './Contact.css'
 
 function Contact() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    subject: '',
     message: ''
   })
 
@@ -42,10 +42,6 @@ function Contact() {
       newErrors.email = 'Email is invalid'
     }
 
-    if (!formData.subject.trim()) {
-      newErrors.subject = 'Subject is required'
-    }
-
     if (!formData.message.trim()) {
       newErrors.message = 'Message is required'
     }
@@ -63,7 +59,7 @@ function Contact() {
       setSubmitted(true)
       setTimeout(() => {
         setSubmitted(false)
-        setFormData({ name: '', email: '', subject: '', message: '' })
+        setFormData({ name: '', email: '', message: '' })
       }, 4000)
     }
   }
@@ -72,7 +68,7 @@ function Contact() {
     <div className="contact-page">
       <section className="contact-hero">
         <div className="contact-hero-content">
-          <h1 className="contact-hero-title">Get In Touch</h1>
+          <h1 className="contact-hero-title">Contact Us</h1>
           <p className="contact-hero-subtitle">
             We'd love to hear from you. Send us a message and we'll respond as soon as possible.
           </p>
@@ -97,49 +93,22 @@ function Contact() {
                   <a href="mailto:ivyforhelp@gmail.com">ivyforhelp@gmail.com</a>
                 </div>
               </div>
-
-              <div className="contact-info-item">
-                <div className="info-icon-wrapper">
-                  <HiPhone size={24} />
-                </div>
-                <div className="info-content">
-                  <h4>Phone</h4>
-                  <a href="tel:+201012345678">+20 (10) 1234-5678</a>
-                </div>
-              </div>
-
-              <div className="contact-info-item">
-                <div className="info-icon-wrapper">
-                  <HiLocationMarker size={24} />
-                </div>
-                <div className="info-content">
-                  <h4>Location</h4>
-                  <p>Cairo, Egypt</p>
-                </div>
-              </div>
-
-              <div className="contact-info-item">
-                <div className="info-icon-wrapper">
-                  <HiClock size={24} />
-                </div>
-                <div className="info-content">
-                  <h4>Business Hours</h4>
-                  <p>Sun - Thu: 9:00 AM - 6:00 PM</p>
-                </div>
-              </div>
             </div>
 
             <div className="social-section">
               <h4 className="social-title">Follow Us</h4>
               <div className="social-links-grid">
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-link-item">
+                <a href="https://www.instagram.com/ivywear.eg" target="_blank" rel="noopener noreferrer" className="social-link-item">
                   <FaInstagram size={20} />
+                  <span>@ivywear.eg</span>
                 </a>
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="social-link-item">
-                  <FaTwitter size={20} />
+                <a href="https://www.tiktok.com/@ivywear.eg" target="_blank" rel="noopener noreferrer" className="social-link-item">
+                  <FaTiktok size={20} />
+                  <span>@ivywear.eg</span>
                 </a>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="social-link-item">
-                  <FaLinkedin size={20} />
+                <a href="https://linktr.ee/ivyeg" target="_blank" rel="noopener noreferrer" className="social-link-item">
+                  <BiLink size={20} />
+                  <span>Linktree</span>
                 </a>
               </div>
             </div>
@@ -190,23 +159,6 @@ function Contact() {
                     placeholder="john@example.com"
                   />
                   {errors.email && <span className="error-text">{errors.email}</span>}
-                </div>
-
-                <div className="form-group-modern">
-                  <label htmlFor="subject" className="form-label-modern">
-                    <HiPencil size={18} />
-                    <span>Subject</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    className={`form-input-modern ${errors.subject ? 'error' : ''}`}
-                    placeholder="How can we help you?"
-                  />
-                  {errors.subject && <span className="error-text">{errors.subject}</span>}
                 </div>
 
                 <div className="form-group-modern">
