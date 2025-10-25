@@ -92,7 +92,7 @@ function Home() {
     <div className="home">
       <section className="hero-section">
         <div className="hero-container">
-          <img src={`${process.env.PUBLIC_URL}/IMGs/IVY-03.png`} alt="IVY" className="hero-logo" />
+          <img src="/IMGs/IVY-03.png" alt="IVY" className="hero-logo" />
           <p className="hero-slogan">Your Everyday Wingman</p>
           <button className="hero-cta" onClick={() => navigate('/products')}>
             <span>Explore Collection</span>

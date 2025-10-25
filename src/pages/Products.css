@@ -26,6 +26,70 @@
   color: #b0b0b0;
 }
 
+/* Coming Soon Container */
+.coming-soon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 2rem;
+  text-align: center;
+  background: #1a1a1a;
+  border: 1px solid #333333;
+  border-radius: 12px;
+  max-width: 600px;
+  margin: 4rem auto;
+}
+
+.coming-soon-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+.coming-soon-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.coming-soon-message {
+  font-size: 1rem;
+  color: #b0b0b0;
+  max-width: 400px;
+}
+
+@media (max-width: 768px) {
+  .coming-soon-container {
+    padding: 4rem 1.5rem;
+    margin: 3rem 1rem;
+  }
+
+  .coming-soon-icon {
+    font-size: 3rem;
+  }
+
+  .coming-soon-title {
+    font-size: 1.5rem;
+  }
+
+  .coming-soon-message {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .coming-soon-container {
+    padding: 3rem 1rem;
+    margin: 2rem 0.75rem;
+    border-radius: 10px;
+  }
+
+  .coming-soon-title {
+    font-size: 1.35rem;
+  }
+}
+
 @media (max-width: 768px) {
   .products-hero {
     padding: 2rem 1rem 2rem;

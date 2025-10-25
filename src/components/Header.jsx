@@ -62,7 +62,7 @@ function Header() {
             </nav>
 
             <Link to="/" className="logo-center">
-              <img src={`${process.env.PUBLIC_URL}/IMGs/IVY-03.png`} alt="IVY" className="logo-img" />
+              <img src="/IMGs/IVY-03.png" alt="IVY" className="logo-img" />
             </Link>
 
             <nav className="nav-right">
@@ -90,7 +90,7 @@ function Header() {
             </button>
 
             <Link to="/" className="logo-mobile">
-              <img src={`${process.env.PUBLIC_URL}/IMGs/IVY-03.png`} alt="IVY" className="logo-img" />
+              <img src="/IMGs/IVY-03.png" alt="IVY" className="logo-img" />
             </Link>
 
             <button className="cart-btn-mobile" onClick={handleCartClick}>

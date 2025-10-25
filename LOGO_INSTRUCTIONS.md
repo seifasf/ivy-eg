@@ -49,6 +49,8 @@ If your logo has a different name or format:
    - `src/components/Footer.jsx` (line 14)
 3. Change `IVY-03.png` to your logo filename
 
-## Technical Note
-The logo paths have been updated to use `process.env.PUBLIC_URL` which ensures they work correctly when deployed to any hosting platform (Netlify, Vercel, GitHub Pages, etc.).
-
+## Technical Note - Vite Public Assets
+This project uses Vite, which serves files from the `public` folder directly at the root path.
+- Files in `/public/IMGs/` are accessible at `/IMGs/`
+- No special environment variables needed
+- The logo paths work the same in development and production
