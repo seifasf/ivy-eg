@@ -11,7 +11,7 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="footer-container">
-        <img src="/IMGs/IVY-03.png" alt="IVY" className="footer-logo" />
+        <img src={`${process.env.PUBLIC_URL}/IMGs/IVY-03.png`} alt="IVY" className="footer-logo" />
         
         <p className="footer-slogan">Your Everyday Wingman</p>
         

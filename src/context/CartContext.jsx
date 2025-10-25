@@ -12,7 +12,6 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([])
-  const [isCartOpen, setIsCartOpen] = useState(false)
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -43,7 +42,6 @@ export const CartProvider = ({ children }) => {
         return [...prevItems, { ...product, quantity: 1 }]
       }
     })
-    setIsCartOpen(true)
   }
 
   const removeFromCart = (productId) => {
@@ -85,8 +83,6 @@ export const CartProvider = ({ children }) => {
     clearCart,
     getCartTotal,
     getCartCount,
-    isCartOpen,
-    setIsCartOpen,
   }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>

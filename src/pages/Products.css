@@ -207,11 +207,18 @@
   justify-content: center;
   margin: 0 auto 1.25rem;
   transition: all 0.3s ease;
+  overflow: hidden;
 }
 
 .product-card:hover .product-card-icon {
   background: #000000;
   border-color: #ffffff;
+}
+
+.product-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 @media (max-width: 768px) {
@@ -297,6 +304,180 @@
   
   .product-card-price {
     font-size: 0.9rem;
+  }
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 2rem;
+  min-height: 400px;
+}
+
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid #333333;
+  border-top: 4px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  margin-top: 1.5rem;
+  font-size: 1.125rem;
+  color: #b0b0b0;
+  font-weight: 500;
+}
+
+/* Error State */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 2rem;
+  text-align: center;
+  background: #1a1a1a;
+  border: 1px solid #333333;
+  border-radius: 12px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.error-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+.error-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.error-message {
+  font-size: 1rem;
+  color: #b0b0b0;
+  margin-bottom: 2rem;
+  max-width: 400px;
+}
+
+.btn-retry {
+  padding: 1rem 2.5rem;
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-retry:hover {
+  background: #f0f0f0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+/* Empty State */
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 2rem;
+  text-align: center;
+  background: #1a1a1a;
+  border: 1px solid #333333;
+  border-radius: 12px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+.empty-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.empty-message {
+  font-size: 1rem;
+  color: #b0b0b0;
+  max-width: 400px;
+}
+
+/* Responsive Loading/Error States */
+@media (max-width: 768px) {
+  .loading-container,
+  .error-container,
+  .empty-container {
+    padding: 4rem 1.5rem;
+  }
+
+  .loading-spinner {
+    width: 50px;
+    height: 50px;
+  }
+
+  .loading-text {
+    font-size: 1rem;
+  }
+
+  .error-icon,
+  .empty-icon {
+    font-size: 3rem;
+  }
+
+  .error-title,
+  .empty-title {
+    font-size: 1.5rem;
+  }
+
+  .error-message,
+  .empty-message {
+    font-size: 0.95rem;
+  }
+
+  .btn-retry {
+    padding: 0.95rem 2.25rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .loading-container,
+  .error-container,
+  .empty-container {
+    padding: 3rem 1rem;
+  }
+
+  .error-container,
+  .empty-container {
+    border-radius: 10px;
+  }
+
+  .error-title,
+  .empty-title {
+    font-size: 1.35rem;
   }
 }
 
