@@ -1,0 +1,490 @@
+.admin-dashboard {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.admin-page-header {
+  margin-bottom: 2.5rem;
+}
+
+.admin-page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.admin-page-subtitle {
+  font-size: 1rem;
+  color: #b0b0b0;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.stat-card {
+  background: #1a1a1a;
+  border: 1px solid #333333;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: #ffffff20;
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #b0b0b0;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.stat-trend {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: #00d2d3;
+  font-weight: 500;
+}
+
+/* Dashboard Section */
+.dashboard-section {
+  background: #1a1a1a;
+  border: 1px solid #333333;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.section-link {
+  color: #b0b0b0;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+
+.section-link:hover {
+  color: #ffffff;
+}
+
+/* Orders Table */
+.orders-table-container {
+  overflow-x: auto;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.orders-table thead tr {
+  border-bottom: 1px solid #333333;
+}
+
+.orders-table th {
+  text-align: left;
+  padding: 0.875rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #b0b0b0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.orders-table tbody tr {
+  border-bottom: 1px solid #333333;
+  transition: background 0.3s ease;
+}
+
+.orders-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.orders-table tbody tr:hover {
+  background: #0a0a0a;
+}
+
+.orders-table td {
+  padding: 1rem 0.875rem;
+  font-size: 0.9rem;
+  color: #ffffff;
+}
+
+.order-id {
+  font-family: monospace;
+  color: #b0b0b0;
+}
+
+.customer-name {
+  font-weight: 500;
+}
+
+.order-total {
+  font-weight: 600;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.order-date {
+  color: #b0b0b0;
+  font-size: 0.85rem;
+}
+
+/* Shipping Section */
+.shipping-section {
+  margin-top: 2.5rem;
+}
+
+.section-title-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.save-success {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #00d2d330;
+  color: #00d2d3;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.shipping-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.shipping-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: #0a0a0a;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.shipping-item:hover {
+  border-color: #ffffff30;
+}
+
+.governorate-name {
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 0.95rem;
+}
+
+.shipping-fee-display {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.fee-value {
+  font-weight: 700;
+  color: #00d2d3;
+  font-size: 1rem;
+  min-width: 70px;
+  text-align: right;
+}
+
+.btn-edit-shipping {
+  padding: 0.35rem 0.875rem;
+  background: transparent;
+  border: 1px solid #54a0ff;
+  color: #54a0ff;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-edit-shipping:hover {
+  background: #54a0ff;
+  color: #ffffff;
+}
+
+.edit-shipping-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.shipping-input {
+  width: 80px;
+  padding: 0.5rem 0.75rem;
+  background: #000000;
+  border: 1px solid #ffffff;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.shipping-input:focus {
+  outline: none;
+  border-color: #00d2d3;
+}
+
+.btn-save-shipping,
+.btn-cancel-shipping {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-save-shipping {
+  background: #00d2d3;
+  color: #000000;
+}
+
+.btn-save-shipping:hover {
+  background: #00b8ba;
+  transform: scale(1.05);
+}
+
+.btn-cancel-shipping {
+  background: #ff4757;
+  color: #ffffff;
+}
+
+.btn-cancel-shipping:hover {
+  background: #ee3344;
+  transform: scale(1.05);
+}
+
+.shipping-note {
+  padding: 1rem;
+  background: #0a0a0a;
+  border-radius: 6px;
+  color: #b0b0b0;
+  font-size: 0.875rem;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Quick Actions */
+.quick-actions-section {
+  margin-top: 2.5rem;
+}
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.quick-action-card {
+  background: #1a1a1a;
+  border: 1px solid #333333;
+  border-radius: 12px;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+  color: #ffffff;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.quick-action-card:hover {
+  background: #0a0a0a;
+  border-color: #ffffff;
+  transform: translateY(-3px);
+}
+
+.quick-action-card svg {
+  color: #ffffff;
+}
+
+.quick-action-card span {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+
+  .admin-page-title {
+    font-size: 1.75rem;
+  }
+
+  .dashboard-section {
+    padding: 1.25rem;
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-page-header {
+    margin-bottom: 2rem;
+  }
+
+  .admin-page-title {
+    font-size: 1.5rem;
+  }
+
+  .admin-page-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1.25rem;
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .orders-table {
+    font-size: 0.85rem;
+  }
+
+  .orders-table th,
+  .orders-table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .shipping-grid {
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+  }
+
+  .shipping-item {
+    padding: 0.875rem 1rem;
+  }
+
+  .governorate-name {
+    font-size: 0.875rem;
+  }
+
+  .fee-value {
+    font-size: 0.9rem;
+    min-width: 60px;
+  }
+
+  .shipping-input {
+    width: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .quick-action-card {
+    padding: 1.5rem;
+  }
+
+  .stat-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
+

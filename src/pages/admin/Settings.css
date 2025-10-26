@@ -1,0 +1,288 @@
+.admin-settings-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.save-message {
+  position: fixed;
+  top: 90px;
+  right: 2rem;
+  z-index: 3000;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  animation: slideInRight 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.save-message.success {
+  background: #00d2d3;
+  color: #000000;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.settings-section {
+  background: #1a1a1a;
+  border: 1px solid #333333;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.section-header-settings {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #333333;
+}
+
+.section-header-settings svg {
+  color: #ffffff;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.section-header-settings h2 {
+  font-size: 1.5rem;
+  color: #ffffff;
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+}
+
+.section-header-settings p {
+  font-size: 0.95rem;
+  color: #b0b0b0;
+}
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section-note {
+  font-size: 0.9rem;
+  color: #b0b0b0;
+  margin-bottom: 1.25rem;
+}
+
+.governorates-section h3 {
+  font-size: 1.125rem;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.governorates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.governorate-fee-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.governorate-fee-item label {
+  font-size: 0.875rem;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.fee-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fee-input-wrapper input {
+  flex: 1;
+  padding: 0.75rem;
+  background: #0a0a0a;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.fee-input-wrapper input:focus {
+  outline: none;
+  border-color: #ffffff;
+}
+
+.fee-input-wrapper span {
+  color: #b0b0b0;
+  font-size: 0.875rem;
+}
+
+.btn-save-section {
+  width: fit-content;
+  padding: 1rem 2.5rem;
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-save-section:hover {
+  background: #f0f0f0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+.email-info-box {
+  background: #0a0a0a;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.email-info-box h4 {
+  color: #ffffff;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.email-info-box ol {
+  margin-left: 1.5rem;
+  color: #b0b0b0;
+  line-height: 1.8;
+}
+
+.email-info-box li {
+  margin-bottom: 0.5rem;
+}
+
+.email-info-box a {
+  color: #54a0ff;
+  text-decoration: none;
+}
+
+.email-info-box a:hover {
+  text-decoration: underline;
+}
+
+.email-status {
+  padding: 1rem;
+  background: #0a0a0a;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.email-status p {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.security-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.security-info h4 {
+  color: #ffffff;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.credentials-box {
+  padding: 1.5rem;
+  background: #0a0a0a;
+  border: 1px solid #333333;
+  border-radius: 8px;
+}
+
+.credentials-box p {
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.credentials-box strong {
+  color: #b0b0b0;
+  font-weight: 600;
+}
+
+.security-note {
+  padding: 1.25rem;
+  background: rgba(255, 159, 67, 0.1);
+  border: 1px solid #ff9f43;
+  border-radius: 8px;
+  color: #ff9f43;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.security-note code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 968px) {
+  .governorates-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .settings-section {
+    padding: 1.5rem;
+  }
+
+  .section-header-settings {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .governorates-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .save-message {
+    right: 1rem;
+    left: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-section {
+    padding: 1.25rem;
+  }
+
+  .btn-save-section {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

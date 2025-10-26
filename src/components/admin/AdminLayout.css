@@ -1,0 +1,260 @@
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #000000;
+}
+
+/* Mobile Header */
+.admin-mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: #1a1a1a;
+  border-bottom: 1px solid #333333;
+  padding: 0 1rem;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 1000;
+}
+
+.admin-mobile-menu-btn,
+.admin-mobile-logout {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-mobile-logo img {
+  height: 35px;
+  filter: brightness(0) invert(1);
+}
+
+/* Sidebar */
+.admin-sidebar {
+  width: 280px;
+  background: #1a1a1a;
+  border-right: 1px solid #333333;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 999;
+  transition: transform 0.3s ease;
+}
+
+.admin-sidebar-overlay {
+  display: none;
+}
+
+.admin-sidebar-header {
+  padding: 2rem 1.5rem;
+  border-bottom: 1px solid #333333;
+  text-align: center;
+}
+
+.admin-sidebar-logo {
+  height: 60px;
+  filter: brightness(0) invert(1);
+  margin-bottom: 0.75rem;
+}
+
+.admin-sidebar-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+.admin-sidebar-nav {
+  flex: 1;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem 1.25rem;
+  color: #b0b0b0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.admin-nav-item:hover {
+  background: #0a0a0a;
+  color: #ffffff;
+}
+
+.admin-nav-item.active {
+  background: #ffffff;
+  color: #000000;
+  font-weight: 600;
+}
+
+.admin-sidebar-footer {
+  padding: 1.5rem 1rem;
+  border-top: 1px solid #333333;
+}
+
+.admin-user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem;
+  background: #0a0a0a;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.admin-user-avatar {
+  width: 40px;
+  height: 40px;
+  background: #333333;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.admin-user-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.admin-user-email {
+  font-size: 0.75rem;
+  color: #b0b0b0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem;
+  background: transparent;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  color: #b0b0b0;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.admin-logout-btn:hover {
+  background: #ff4757;
+  border-color: #ff4757;
+  color: #ffffff;
+}
+
+/* Main Content */
+.admin-main-content {
+  flex: 1;
+  margin-left: 280px;
+  padding: 2.5rem;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+  .admin-mobile-header {
+    display: flex;
+  }
+
+  .admin-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .admin-sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 998;
+  }
+
+  .admin-main-content {
+    margin-left: 0;
+    margin-top: 60px;
+    padding: 1.5rem 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-main-content {
+    padding: 1.25rem 0.875rem;
+  }
+
+  .admin-sidebar-header {
+    padding: 1.5rem 1rem;
+  }
+
+  .admin-sidebar-logo {
+    height: 50px;
+  }
+
+  .admin-sidebar-title {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-sidebar {
+    width: 260px;
+  }
+
+  .admin-main-content {
+    padding: 1rem 0.75rem;
+  }
+
+  .admin-user-info {
+    padding: 0.75rem;
+  }
+
+  .admin-user-avatar {
+    width: 35px;
+    height: 35px;
+  }
+
+  .admin-nav-item {
+    padding: 0.75rem 1rem;
+  }
+}
+
