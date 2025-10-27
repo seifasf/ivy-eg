@@ -25,48 +25,23 @@ function PromoCodes() {
     active: true
   })
 
-  // Mock promo codes data
   useEffect(() => {
-    const mockCodes = [
-      {
-        id: 1,
-        code: 'SUMMER20',
-        discountType: 'percentage',
-        discountValue: 20,
-        minOrderValue: 500,
-        maxUsage: 100,
-        currentUsage: 45,
-        expiryDate: '2025-12-31',
-        active: true,
-        createdAt: '2025-10-01'
-      },
-      {
-        id: 2,
-        code: 'FIRST50',
-        discountType: 'fixed',
-        discountValue: 50,
-        minOrderValue: 200,
-        maxUsage: 50,
-        currentUsage: 12,
-        expiryDate: '2025-11-30',
-        active: true,
-        createdAt: '2025-10-15'
-      },
-      {
-        id: 3,
-        code: 'VIP100',
-        discountType: 'fixed',
-        discountValue: 100,
-        minOrderValue: 1000,
-        maxUsage: 20,
-        currentUsage: 8,
-        expiryDate: '2025-12-15',
-        active: true,
-        createdAt: '2025-10-20'
-      }
-    ]
-    setPromoCodes(mockCodes)
+    fetchPromoCodes()
   }, [])
+
+  const fetchPromoCodes = async () => {
+    try {
+      // TODO: Replace with actual API call
+      // const response = await fetch('/api/admin/promo-codes')
+      // const data = await response.json()
+      // setPromoCodes(data)
+      
+      // For now, set empty array
+      setPromoCodes([])
+    } catch (error) {
+      console.error('Error fetching promo codes:', error)
+    }
+  }
 
   const openAddModal = () => {
     setEditingCode(null)

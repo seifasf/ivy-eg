@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { authAPI } from '../services/api'
 
 const AdminContext = createContext()
 
@@ -17,45 +18,49 @@ export const AdminProvider = ({ children }) => {
 
   // Check if admin is logged in on mount
   useEffect(() => {
-    const storedAdmin = localStorage.getItem('ivyAdmin')
-    if (storedAdmin) {
+    const token = localStorage.getItem('adminToken')
+    const storedAdmin = localStorage.getItem('adminUser')
+    
+    if (token && storedAdmin) {
       try {
         const admin = JSON.parse(storedAdmin)
         setAdminUser(admin)
         setIsAuthenticated(true)
       } catch (error) {
         console.error('Error parsing admin data:', error)
-        localStorage.removeItem('ivyAdmin')
+        localStorage.removeItem('adminToken')
+        localStorage.removeItem('adminUser')
       }
     }
     setLoading(false)
   }, [])
 
-  const login = (email, password) => {
-    // TODO: Replace with actual API call
-    // For now, using hardcoded credentials
-    const ADMIN_EMAIL = 'admin@ivy.eg'
-    const ADMIN_PASSWORD = 'IVY@2025'
-
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      const admin = {
-        email: email,
-        name: 'Admin',
-        loginTime: new Date().toISOString()
-      }
-      setAdminUser(admin)
+  const login = async (email, password) => {
+    setLoading(true)
+    
+    try {
+      const response = await authAPI.login({ email, password })
+      
+      // Backend returns: { token, user: { id, fullName, email, phone } }
+      localStorage.setItem('adminToken', response.token)
+      localStorage.setItem('adminUser', JSON.stringify(response.user))
+      
+      setAdminUser(response.user)
       setIsAuthenticated(true)
-      localStorage.setItem('ivyAdmin', JSON.stringify(admin))
+      setLoading(false)
+      
       return { success: true }
-    } else {
-      return { success: false, error: 'Invalid email or password' }
+    } catch (error) {
+      setLoading(false)
+      return { success: false, error: error.message || 'Login failed. Please check your credentials.' }
     }
   }
 
   const logout = () => {
     setAdminUser(null)
     setIsAuthenticated(false)
-    localStorage.removeItem('ivyAdmin')
+    localStorage.removeItem('adminToken')
+    localStorage.removeItem('adminUser')
   }
 
   const value = {

@@ -17,44 +17,25 @@ function Orders() {
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [showModal, setShowModal] = useState(false)
 
-  // Mock orders data - replace with API
   useEffect(() => {
-    const mockOrders = [
-      {
-        id: 'ORD-001',
-        customer: { name: 'Ahmed Mohamed', email: 'ahmed@email.com', phone: '+20 100 123 4567' },
-        items: [
-          { name: 'Premium T-Shirt', size: 'L', quantity: 2, price: 299 },
-          { name: 'Casual Hoodie', size: 'M', quantity: 1, price: 599 }
-        ],
-        total: 1197,
-        shippingFee: 50,
-        status: 'pending',
-        date: '2025-10-26T10:30:00',
-        governorate: 'Cairo',
-        city: 'Nasr City',
-        address: '123 Main Street, Apt 4',
-        paymentMethod: 'COD'
-      },
-      {
-        id: 'ORD-002',
-        customer: { name: 'Sara Ali', email: 'sara@email.com', phone: '+20 100 234 5678' },
-        items: [
-          { name: 'Sports Jacket', size: 'XL', quantity: 1, price: 799 }
-        ],
-        total: 799,
-        shippingFee: 50,
-        status: 'processing',
-        date: '2025-10-26T08:15:00',
-        governorate: 'Giza',
-        city: '6th October',
-        address: '456 Street Name',
-        paymentMethod: 'InstaPay'
-      }
-    ]
-    setOrders(mockOrders)
-    setFilteredOrders(mockOrders)
+    fetchOrders()
   }, [])
+
+  const fetchOrders = async () => {
+    try {
+      // TODO: Replace with actual API call
+      // const response = await fetch('/api/admin/orders')
+      // const data = await response.json()
+      // setOrders(data)
+      // setFilteredOrders(data)
+      
+      // For now, set empty array
+      setOrders([])
+      setFilteredOrders([])
+    } catch (error) {
+      console.error('Error fetching orders:', error)
+    }
+  }
 
   // Filter orders
   useEffect(() => {

@@ -9,6 +9,7 @@ import {
   HiEye,
   HiEyeOff
 } from 'react-icons/hi'
+import { productsAPI } from '../../services/api'
 import './Products.css'
 
 function Products() {
@@ -16,94 +17,94 @@ function Products() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
   const [formData, setFormData] = useState({
-    name: '',
+    title: '',
     description: '',
     price: '',
-    discount: '',
-    discountType: 'percentage',
+    discountPrice: '',
     category: '',
-    stock: {
-      S: 0,
-      M: 0,
-      L: 0,
-      XL: 0
-    },
-    images: [],
-    active: true
+    stock: '',
+    sizes: [],
+    mainImage: null,
+    additionalImages: [],
+    inStock: true
+  })
+  const [imageFiles, setImageFiles] = useState({
+    mainImage: null,
+    additionalImages: []
+  })
+  const [imagePreviews, setImagePreviews] = useState({
+    mainImage: null,
+    additionalImages: []
   })
 
-  // Mock products data
   useEffect(() => {
-    const mockProducts = [
-      {
-        id: 1,
-        name: 'Premium T-Shirt',
-        description: 'High-quality cotton t-shirt with modern fit',
-        price: 299,
-        discount: 10,
-        discountType: 'percentage',
-        category: 'T-Shirts',
-        stock: { S: 10, M: 15, L: 20, XL: 8 },
-        images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400'],
-        active: true
-      },
-      {
-        id: 2,
-        name: 'Casual Hoodie',
-        description: 'Comfortable hoodie for everyday wear',
-        price: 599,
-        discount: 50,
-        discountType: 'fixed',
-        category: 'Hoodies',
-        stock: { S: 5, M: 10, L: 15, XL: 5 },
-        images: ['https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400'],
-        active: true
-      }
-    ]
-    setProducts(mockProducts)
+    fetchProducts()
   }, [])
 
+  const fetchProducts = async () => {
+    try {
+      setLoading(true)
+      const data = await productsAPI.getAll()
+      setProducts(data)
+      setError(null)
+    } catch (error) {
+      console.error('Error fetching products:', error)
+      setError('Failed to load products')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchTerm.toLowerCase())
+    product.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.category?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const openAddModal = () => {
     setEditingProduct(null)
     setFormData({
-      name: '',
+      title: '',
       description: '',
       price: '',
-      discount: '',
-      discountType: 'percentage',
+      discountPrice: '',
       category: '',
-      stock: { S: 0, M: 0, L: 0, XL: 0 },
-      images: [],
-      active: true
+      stock: '',
+      sizes: [],
+      inStock: true
     })
+    setImageFiles({ mainImage: null, additionalImages: [] })
+    setImagePreviews({ mainImage: null, additionalImages: [] })
     setShowModal(true)
   }
 
   const openEditModal = (product) => {
     setEditingProduct(product)
     setFormData({
-      name: product.name,
+      title: product.title,
       description: product.description,
       price: product.price.toString(),
-      discount: product.discount.toString(),
-      discountType: product.discountType,
+      discountPrice: product.discountPrice.toString(),
       category: product.category,
-      stock: { ...product.stock },
-      images: [...product.images],
-      active: product.active
+      stock: product.stock.toString(),
+      sizes: product.sizes || [],
+      inStock: product.inStock
     })
+    // Show existing images as previews
+    setImagePreviews({
+      mainImage: `http://localhost:5001/uploads/${product.mainImage}`,
+      additionalImages: product.images.map(img => `http://localhost:5001/uploads/${img}`)
+    })
+    setImageFiles({ mainImage: null, additionalImages: [] })
     setShowModal(true)
   }
 
   const closeModal = () => {
     setShowModal(false)
     setEditingProduct(null)
+    setError(null)
   }
 
   const handleChange = (e) => {
@@ -114,73 +115,128 @@ function Products() {
     }))
   }
 
-  const handleStockChange = (size, value) => {
+  const handleSizeToggle = (size) => {
     setFormData(prev => ({
       ...prev,
-      stock: {
-        ...prev.stock,
-        [size]: parseInt(value) || 0
-      }
+      sizes: prev.sizes.includes(size)
+        ? prev.sizes.filter(s => s !== size)
+        : [...prev.sizes, size]
     }))
   }
 
-  const handleImageAdd = () => {
-    const imageUrl = prompt('Enter image URL:')
-    if (imageUrl) {
-      setFormData(prev => ({
+  const handleMainImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setImageFiles(prev => ({ ...prev, mainImage: file }))
+      setImagePreviews(prev => ({ ...prev, mainImage: URL.createObjectURL(file) }))
+    }
+  }
+
+  const handleAdditionalImagesChange = (e) => {
+    const files = Array.from(e.target.files)
+    if (files.length > 0) {
+      setImageFiles(prev => ({
         ...prev,
-        images: [...prev.images, imageUrl]
+        additionalImages: [...prev.additionalImages, ...files]
+      }))
+      const previews = files.map(file => URL.createObjectURL(file))
+      setImagePreviews(prev => ({
+        ...prev,
+        additionalImages: [...prev.additionalImages, ...previews]
       }))
     }
   }
 
-  const handleImageRemove = (index) => {
-    setFormData(prev => ({
+  const removeAdditionalImage = (index) => {
+    setImageFiles(prev => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      additionalImages: prev.additionalImages.filter((_, i) => i !== index)
+    }))
+    setImagePreviews(prev => ({
+      ...prev,
+      additionalImages: prev.additionalImages.filter((_, i) => i !== index)
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    const productData = {
-      ...formData,
-      price: parseFloat(formData.price),
-      discount: parseFloat(formData.discount) || 0,
-      id: editingProduct ? editingProduct.id : Date.now()
-    }
+    setLoading(true)
+    setError(null)
 
-    if (editingProduct) {
-      setProducts(products.map(p => p.id === editingProduct.id ? productData : p))
-    } else {
-      setProducts([...products, productData])
-    }
+    try {
+      const formDataToSend = new FormData()
+      formDataToSend.append('title', formData.title)
+      formDataToSend.append('description', formData.description)
+      formDataToSend.append('price', formData.price)
+      formDataToSend.append('discountPrice', formData.discountPrice)
+      formDataToSend.append('category', formData.category)
+      formDataToSend.append('stock', formData.stock)
+      formDataToSend.append('inStock', formData.inStock)
+      
+      // Sizes array
+      formData.sizes.forEach(size => {
+        formDataToSend.append('sizes', size)
+      })
 
-    closeModal()
+      // Images
+      if (imageFiles.mainImage) {
+        formDataToSend.append('mainImage', imageFiles.mainImage)
+      }
+      imageFiles.additionalImages.forEach(file => {
+        formDataToSend.append('images', file)
+      })
+
+      if (editingProduct) {
+        await productsAPI.update(editingProduct._id, formDataToSend)
+      } else {
+        if (!imageFiles.mainImage) {
+          setError('Main image is required')
+          setLoading(false)
+          return
+        }
+        await productsAPI.create(formDataToSend)
+      }
+
+      await fetchProducts()
+      closeModal()
+    } catch (error) {
+      console.error('Error saving product:', error)
+      setError(error.message || 'Failed to save product')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleDelete = (productId) => {
+  const handleDelete = async (productId) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      setProducts(products.filter(p => p.id !== productId))
+      try {
+        setLoading(true)
+        await productsAPI.delete(productId)
+        await fetchProducts()
+      } catch (error) {
+        console.error('Error deleting product:', error)
+        setError('Failed to delete product')
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
-  const toggleActive = (productId) => {
-    setProducts(products.map(p =>
-      p.id === productId ? { ...p, active: !p.active } : p
-    ))
-  }
-
-  const calculateFinalPrice = (price, discount, discountType) => {
-    if (discountType === 'percentage') {
-      return price - (price * discount / 100)
+  const toggleActive = async (product) => {
+    try {
+      const formData = new FormData()
+      formData.append('inStock', !product.inStock)
+      await productsAPI.update(product._id, formData)
+      await fetchProducts()
+    } catch (error) {
+      console.error('Error updating product:', error)
+      setError('Failed to update product status')
     }
-    return price - discount
   }
 
-  const getTotalStock = (stock) => {
-    return Object.values(stock).reduce((sum, qty) => sum + qty, 0)
+  const calculateDiscount = (price, discountPrice) => {
+    if (discountPrice >= price) return 0
+    return Math.round(((price - discountPrice) / price) * 100)
   }
 
   return (
@@ -209,14 +265,17 @@ function Products() {
         </div>
         <div className="products-stats">
           <span>Total: {products.length}</span>
-          <span>Active: {products.filter(p => p.active).length}</span>
-          <span>Inactive: {products.filter(p => !p.active).length}</span>
+          <span>In Stock: {products.filter(p => p.inStock).length}</span>
+          <span>Out of Stock: {products.filter(p => !p.inStock).length}</span>
         </div>
       </div>
 
       {/* Products Grid */}
+      {error && <div className="error-message">{error}</div>}
+      {loading && <div className="loading">Loading products...</div>}
+      
       <div className="products-grid">
-        {filteredProducts.length === 0 ? (
+        {filteredProducts.length === 0 && !loading ? (
           <div className="no-products">
             <p>No products found</p>
             <button className="btn-add-first" onClick={openAddModal}>
@@ -226,33 +285,34 @@ function Products() {
           </div>
         ) : (
           filteredProducts.map(product => (
-            <div key={product.id} className={`product-card ${!product.active ? 'inactive' : ''}`}>
+            <div key={product._id} className={`product-card ${!product.inStock ? 'inactive' : ''}`}>
               <div className="product-image-wrapper">
-                {product.images.length > 0 ? (
-                  <img src={product.images[0]} alt={product.name} />
+                {product.mainImage ? (
+                  <img 
+                    src={`http://localhost:5001/uploads/${product.mainImage}`} 
+                    alt={product.title} 
+                  />
                 ) : (
                   <div className="no-image">
                     <HiPhotograph size={40} />
                   </div>
                 )}
-                {!product.active && <div className="inactive-overlay">INACTIVE</div>}
+                {!product.inStock && <div className="inactive-overlay">OUT OF STOCK</div>}
               </div>
 
               <div className="product-info">
-                <h3 className="product-name">{product.name}</h3>
+                <h3 className="product-name">{product.title}</h3>
                 <p className="product-category">{product.category}</p>
                 
                 <div className="product-pricing">
-                  {product.discount > 0 ? (
+                  {product.discountPrice < product.price ? (
                     <>
                       <span className="original-price">{product.price.toLocaleString()} EGP</span>
                       <span className="final-price">
-                        {calculateFinalPrice(product.price, product.discount, product.discountType).toLocaleString()} EGP
+                        {product.discountPrice.toLocaleString()} EGP
                       </span>
                       <span className="discount-badge">
-                        {product.discountType === 'percentage' 
-                          ? `-${product.discount}%` 
-                          : `-${product.discount} EGP`}
+                        -{calculateDiscount(product.price, product.discountPrice)}%
                       </span>
                     </>
                   ) : (
@@ -262,33 +322,37 @@ function Products() {
 
                 <div className="product-stock">
                   <span className="stock-label">Total Stock:</span>
-                  <span className={`stock-value ${getTotalStock(product.stock) === 0 ? 'out-of-stock' : ''}`}>
-                    {getTotalStock(product.stock)} items
+                  <span className={`stock-value ${product.stock === 0 ? 'out-of-stock' : ''}`}>
+                    {product.stock} items
                   </span>
                 </div>
 
                 <div className="product-sizes">
-                  {Object.entries(product.stock).map(([size, qty]) => (
-                    <div key={size} className={`size-badge ${qty === 0 ? 'out' : ''}`}>
-                      {size}: {qty}
-                    </div>
-                  ))}
+                  {product.sizes && product.sizes.length > 0 ? (
+                    product.sizes.map(size => (
+                      <div key={size} className="size-badge">
+                        {size}
+                      </div>
+                    ))
+                  ) : (
+                    <span className="no-sizes">No sizes specified</span>
+                  )}
                 </div>
               </div>
 
               <div className="product-actions">
                 <button 
-                  className={`btn-toggle ${product.active ? 'active' : 'inactive'}`}
-                  onClick={() => toggleActive(product.id)}
+                  className={`btn-toggle ${product.inStock ? 'active' : 'inactive'}`}
+                  onClick={() => toggleActive(product)}
                 >
-                  {product.active ? <HiEye size={18} /> : <HiEyeOff size={18} />}
-                  {product.active ? 'Active' : 'Inactive'}
+                  {product.inStock ? <HiEye size={18} /> : <HiEyeOff size={18} />}
+                  {product.inStock ? 'In Stock' : 'Out of Stock'}
                 </button>
                 <button className="btn-edit" onClick={() => openEditModal(product)}>
                   <HiPencil size={18} />
                   Edit
                 </button>
-                <button className="btn-delete" onClick={() => handleDelete(product.id)}>
+                <button className="btn-delete" onClick={() => handleDelete(product._id)}>
                   <HiTrash size={18} />
                   Delete
                 </button>
@@ -310,16 +374,18 @@ function Products() {
             </div>
 
             <form className="modal-body product-form" onSubmit={handleSubmit}>
+              {error && <div className="error-message">{error}</div>}
+              
               {/* Basic Info */}
               <div className="form-section">
                 <h3>Basic Information</h3>
                 <div className="form-grid">
                   <div className="form-group">
-                    <label>Product Name *</label>
+                    <label>Product Title *</label>
                     <input
                       type="text"
-                      name="name"
-                      value={formData.name}
+                      name="title"
+                      value={formData.title}
                       onChange={handleChange}
                       required
                       placeholder="e.g., Premium T-Shirt"
@@ -339,11 +405,12 @@ function Products() {
                   </div>
 
                   <div className="form-group full-width">
-                    <label>Description</label>
+                    <label>Description *</label>
                     <textarea
                       name="description"
                       value={formData.description}
                       onChange={handleChange}
+                      required
                       rows="3"
                       placeholder="Product description..."
                     />
@@ -356,7 +423,7 @@ function Products() {
                 <h3>Pricing</h3>
                 <div className="form-grid">
                   <div className="form-group">
-                    <label>Price (EGP) *</label>
+                    <label>Original Price (EGP) *</label>
                     <input
                       type="number"
                       name="price"
@@ -370,117 +437,136 @@ function Products() {
                   </div>
 
                   <div className="form-group">
-                    <label>Discount</label>
+                    <label>Discounted Price (EGP) *</label>
                     <input
                       type="number"
-                      name="discount"
-                      value={formData.discount}
+                      name="discountPrice"
+                      value={formData.discountPrice}
                       onChange={handleChange}
+                      required
                       min="0"
-                      placeholder="0"
+                      step="0.01"
+                      placeholder="249"
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label>Discount Type</label>
-                    <select name="discountType" value={formData.discountType} onChange={handleChange}>
-                      <option value="percentage">Percentage (%)</option>
-                      <option value="fixed">Fixed Amount (EGP)</option>
-                    </select>
-                  </div>
-
-                  {formData.price && formData.discount > 0 && (
+                  {formData.price && formData.discountPrice && parseFloat(formData.discountPrice) < parseFloat(formData.price) && (
                     <div className="form-group">
-                      <label>Final Price</label>
+                      <label>Discount</label>
                       <div className="final-price-display">
-                        {calculateFinalPrice(
-                          parseFloat(formData.price) || 0,
-                          parseFloat(formData.discount) || 0,
-                          formData.discountType
-                        ).toLocaleString()} EGP
+                        {calculateDiscount(parseFloat(formData.price), parseFloat(formData.discountPrice))}% OFF
                       </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Stock by Size */}
+              {/* Stock & Sizes */}
               <div className="form-section">
-                <h3>Stock by Size</h3>
-                <div className="stock-grid">
-                  {['S', 'M', 'L', 'XL'].map(size => (
-                    <div key={size} className="stock-input-group">
-                      <label>{size}</label>
-                      <input
-                        type="number"
-                        value={formData.stock[size]}
-                        onChange={(e) => handleStockChange(size, e.target.value)}
-                        min="0"
-                        placeholder="0"
-                      />
+                <h3>Stock & Sizes</h3>
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>Total Stock *</label>
+                    <input
+                      type="number"
+                      name="stock"
+                      value={formData.stock}
+                      onChange={handleChange}
+                      required
+                      min="0"
+                      placeholder="50"
+                    />
+                  </div>
+
+                  <div className="form-group full-width">
+                    <label>Available Sizes</label>
+                    <div className="sizes-checkboxes">
+                      {['S', 'M', 'L', 'XL', 'XXL'].map(size => (
+                        <label key={size} className="size-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={formData.sizes.includes(size)}
+                            onChange={() => handleSizeToggle(size)}
+                          />
+                          <span>{size}</span>
+                        </label>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
-                <p className="stock-total">
-                  Total Stock: {getTotalStock(formData.stock)} items
-                </p>
               </div>
 
               {/* Images */}
               <div className="form-section">
                 <h3>Product Images</h3>
-                <div className="images-section">
-                  <div className="images-grid">
-                    {formData.images.map((img, index) => (
-                      <div key={index} className="image-preview">
-                        <img src={img} alt={`Product ${index + 1}`} />
-                        <button
-                          type="button"
-                          className="btn-remove-image"
-                          onClick={() => handleImageRemove(index)}
-                        >
-                          <HiX size={16} />
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      className="btn-add-image"
-                      onClick={handleImageAdd}
-                    >
-                      <HiPlus size={24} />
-                      <span>Add Image</span>
-                    </button>
-                  </div>
-                  <p className="images-note">
-                    Click "Add Image" to enter image URLs. First image will be the main product image.
-                  </p>
+                
+                {/* Main Image */}
+                <div className="form-group">
+                  <label>Main Image * {editingProduct && '(Leave empty to keep current)'}</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleMainImageChange}
+                    required={!editingProduct}
+                  />
+                  {imagePreviews.mainImage && (
+                    <div className="image-preview-single">
+                      <img src={imagePreviews.mainImage} alt="Main preview" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Additional Images */}
+                <div className="form-group">
+                  <label>Additional Images (Optional)</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleAdditionalImagesChange}
+                  />
+                  {imagePreviews.additionalImages.length > 0 && (
+                    <div className="images-preview-grid">
+                      {imagePreviews.additionalImages.map((preview, index) => (
+                        <div key={index} className="image-preview">
+                          <img src={preview} alt={`Preview ${index + 1}`} />
+                          <button
+                            type="button"
+                            className="btn-remove-image"
+                            onClick={() => removeAdditionalImage(index)}
+                          >
+                            <HiX size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Active Status */}
+              {/* In Stock Status */}
               <div className="form-section">
                 <div className="form-checkbox">
                   <input
                     type="checkbox"
-                    id="active"
-                    name="active"
-                    checked={formData.active}
+                    id="inStock"
+                    name="inStock"
+                    checked={formData.inStock}
                     onChange={handleChange}
                   />
-                  <label htmlFor="active">
-                    Product is active and visible to customers
+                  <label htmlFor="inStock">
+                    Product is in stock and available for purchase
                   </label>
                 </div>
               </div>
 
               {/* Submit */}
               <div className="form-actions">
-                <button type="button" className="btn-cancel" onClick={closeModal}>
+                <button type="button" className="btn-cancel" onClick={closeModal} disabled={loading}>
                   Cancel
                 </button>
-                <button type="submit" className="btn-save">
-                  {editingProduct ? 'Update Product' : 'Add Product'}
+                <button type="submit" className="btn-save" disabled={loading}>
+                  {loading ? 'Saving...' : (editingProduct ? 'Update Product' : 'Add Product')}
                 </button>
               </div>
             </form>

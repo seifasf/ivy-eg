@@ -59,51 +59,34 @@ function Dashboard() {
   const [saveMessage, setSaveMessage] = useState(false)
 
   useEffect(() => {
-    // TODO: Fetch real data from API
-    setStats({
-      totalOrders: 156,
-      pendingOrders: 12,
-      totalRevenue: 245890,
-      totalProducts: 0, // Coming soon
-      activePromoCodes: 5,
-      totalCustomers: 89
-    })
-
-    setRecentOrders([
-      {
-        id: 'ORD-001',
-        customer: 'Ahmed Mohamed',
-        items: 2,
-        total: 1598,
-        status: 'pending',
-        date: '2 hours ago'
-      },
-      {
-        id: 'ORD-002',
-        customer: 'Sara Ali',
-        items: 1,
-        total: 799,
-        status: 'processing',
-        date: '5 hours ago'
-      },
-      {
-        id: 'ORD-003',
-        customer: 'Mohamed Hassan',
-        items: 3,
-        total: 2397,
-        status: 'shipped',
-        date: '1 day ago'
-      },
-      {
-        id: 'ORD-004',
-        customer: 'Laila Ibrahim',
-        items: 1,
-        total: 599,
-        status: 'delivered',
-        date: '2 days ago'
-      }
-    ])
+    fetchDashboardData()
   }, [])
+
+  const fetchDashboardData = async () => {
+    try {
+      // TODO: Replace with actual API calls
+      // const statsResponse = await fetch('/api/admin/stats')
+      // const statsData = await statsResponse.json()
+      // setStats(statsData)
+      
+      // const ordersResponse = await fetch('/api/admin/recent-orders')
+      // const ordersData = await ordersResponse.json()
+      // setRecentOrders(ordersData)
+      
+      // For now, set empty data
+      setStats({
+        totalOrders: 0,
+        pendingOrders: 0,
+        totalRevenue: 0,
+        totalProducts: 0,
+        activePromoCodes: 0,
+        totalCustomers: 0
+      })
+      setRecentOrders([])
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+    }
+  }
 
   const getStatusColor = (status) => {
     switch (status) {
