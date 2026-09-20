@@ -1,0 +1,39 @@
+{% comment %}
+  Free shipping progress bar.
+  Accepts:
+  - cart: {Object} (required)
+  - class: {String}
+{% endcomment %}
+{%- if settings.show_free_shipping_bar -%}
+  {%- liquid
+    assign threshold = settings.free_shipping_threshold | times: 100
+    assign total = cart.total_price
+    assign remaining = threshold | minus: total
+    assign percent = total | times: 100 | divided_by: threshold
+    if percent > 100
+      assign percent = 100
+    endif
+  -%}
+  <div
+    class="free-shipping-bar-wrap {{ class }}"
+    data-free-shipping-bar
+    {% if cart.item_count == 0 %}hidden{% endif %}
+  >
+    <p
+      class="free-shipping-bar__message"
+      data-free-shipping-message
+      data-qualified="{{ 'cart.general.free_shipping.qualified' | t }}"
+      data-remaining-template="{{ 'cart.general.free_shipping.remaining_html' | t: amount: '__AMOUNT__' }}"
+      data-state="{% if total >= threshold %}qualified{% else %}remaining{% endif %}"
+    >
+      {%- if total >= threshold -%}
+        {{ 'cart.general.free_shipping.qualified' | t }}
+      {%- else -%}
+        {{ 'cart.general.free_shipping.remaining_html' | t: amount: remaining | money }}
+      {%- endif -%}
+    </p>
+    <div class="free-shipping-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ percent }}">
+      <div class="free-shipping-bar__fill" data-free-shipping-fill style="inline-size: {{ percent }}%;"></div>
+    </div>
+  </div>
+{%- endif -%}

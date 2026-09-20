@@ -1,0 +1,32 @@
+{% render 'section-home-assets' %}
+
+<section id="CustomLiquid-{{ section.id }}" class="custom-liquid-section ivy-section">
+  <div class="container">
+    {%- if section.settings.custom_liquid != blank -%}
+      {{ section.settings.custom_liquid }}
+    {%- else -%}
+      <p class="text-muted text-center">{{ 'sections.custom_liquid.empty' | t }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.custom_liquid.name",
+  "tag": "section",
+  "class": "section-custom-liquid",
+  "settings": [
+    {
+      "type": "liquid",
+      "id": "custom_liquid",
+      "label": "t:sections.custom_liquid.settings.custom_liquid.label",
+      "info": "t:sections.custom_liquid.settings.custom_liquid.info"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.custom_liquid.presets.name"
+    }
+  ]
+}
+{% endschema %}

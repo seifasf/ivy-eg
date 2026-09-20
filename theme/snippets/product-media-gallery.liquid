@@ -1,0 +1,88 @@
+{% comment %}
+  Product media gallery with thumbnails, zoom, video, and 3D model support.
+  Accepts:
+  - product: {Object} (required)
+  - enable_zoom: {Boolean}
+{% endcomment %}
+{%- liquid
+  assign gallery_product = product
+  assign zoom_enabled = enable_zoom | default: true
+  assign featured = gallery_product.selected_or_first_available_variant.featured_media | default: gallery_product.featured_media
+-%}
+
+<div class="product-media-gallery" data-media-gallery>
+  <div class="product-media-gallery__main">
+    {%- if zoom_enabled -%}
+      <button
+        type="button"
+        class="product-media-gallery__zoom btn btn--icon"
+        data-media-zoom
+        aria-label="{{ 'products.product.media.zoom' | t }}"
+      >
+        {% render 'icon', icon: 'zoom', size: 20 %}
+      </button>
+    {%- endif -%}
+
+    <div class="product-media-gallery__viewer">
+      {%- for media in gallery_product.media -%}
+        {%- liquid
+          assign is_active = false
+          if featured and media.id == featured.id
+            assign is_active = true
+          elsif featured == blank and forloop.first
+            assign is_active = true
+          endif
+        -%}
+        <div
+          class="product-media-gallery__slide{% if is_active %} product-media-gallery__slide--active{% endif %}"
+          data-media-slide
+          data-media-id="{{ media.id }}"
+          data-media-index="{{ forloop.index0 }}"
+          {% unless is_active %}hidden{% endunless %}
+        >
+          {%- case media.media_type -%}
+            {%- when 'video' -%}
+              {{ media | video_tag: class: 'product-media-gallery__video', controls: true, autoplay: false, loop: false, muted: false }}
+            {%- when 'external_video' -%}
+              {{ media | external_video_tag: class: 'product-media-gallery__video' }}
+            {%- when 'model' -%}
+              {{ media | model_viewer_tag: image_size: '1024x', toggleable: true, class: 'product-media-gallery__model' }}
+            {%- else -%}
+              {{
+                media
+                | image_url: width: 1440
+                | image_tag:
+                  class: 'product-media-gallery__image',
+                  loading: forloop.first,
+                  sizes: '(min-width: 968px) 50vw, 100vw',
+                  widths: '400, 600, 800, 1000, 1200, 1440',
+                  alt: media.alt | default: gallery_product.title | escape
+              }}
+          {%- endcase -%}
+        </div>
+      {%- else -%}
+        <div class="product-media-gallery__slide product-media-gallery__slide--active" data-media-slide>
+          {{ 'product-1' | placeholder_svg_tag: 'product-media-gallery__placeholder' }}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+
+  {%- if gallery_product.media.size > 1 -%}
+    <div class="product-media-gallery__thumbs" role="list">
+      {%- for media in gallery_product.media -%}
+        {%- liquid
+          assign thumb_selected = false
+          if featured and media.id == featured.id
+            assign thumb_selected = true
+          elsif featured == blank and forloop.first
+            assign thumb_selected = true
+          endif
+        -%}
+        <div role="listitem">
+          {% render 'product-thumbnail', media: media, product: gallery_product, index: forloop.index, selected: thumb_selected %}
+        </div>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+</div>

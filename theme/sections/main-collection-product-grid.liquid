@@ -1,0 +1,106 @@
+{{ 'section-collection.css' | asset_url | stylesheet_tag }}
+{{ 'component-facets.css' | asset_url | stylesheet_tag }}
+
+<section class="collection-grid section-padding" id="CollectionGrid-{{ section.id }}">
+  <div class="container">
+    {% render 'facets', results: collection, enable_sorting: section.settings.enable_sorting, filter_style: section.settings.filter_style %}
+
+    <p class="collection-grid__count text-muted" data-collection-count>
+      {{ 'collections.general.items_with_count' | t: count: collection.products_count }}
+    </p>
+
+    <div
+      class="collection-grid__products grid grid--4{% if section.settings.default_view == 'list' %} grid--list{% endif %}"
+      data-product-grid
+      data-view="{{ section.settings.default_view }}"
+      id="ProductGrid"
+    >
+      {%- paginate collection.products by section.settings.products_per_page -%}
+        {%- if collection.products.size == 0 -%}
+          <div class="collection-grid__empty empty-state">
+            <h2 class="empty-state__title">{{ 'collections.general.empty' | t }}</h2>
+            <a href="{{ routes.all_products_collection_url }}" class="btn btn--primary btn--pill">
+              {{ 'general.continue_shopping' | t }}
+            </a>
+          </div>
+        {%- else -%}
+          {%- for product in collection.products -%}
+            {% render 'product-card', product: product, lazy_load: true, show_vendor: section.settings.show_vendor %}
+          {%- endfor -%}
+        {%- endif -%}
+
+        {%- unless section.settings.enable_infinite_scroll -%}
+          {% render 'pagination', paginate: paginate, class: 'collection-grid__pagination' %}
+        {%- endunless -%}
+      {%- endpaginate -%}
+    </div>
+
+    {%- if section.settings.enable_infinite_scroll -%}
+      <div class="collection-grid__infinite" data-infinite-scroll hidden>
+        <button type="button" class="btn btn--secondary btn--pill" data-infinite-load>
+          {{ 'collections.general.load_more' | t }}
+        </button>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product grid",
+  "tag": "section",
+  "class": "section-collection-grid",
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "min": 8,
+      "max": 36,
+      "step": 4,
+      "label": "Products per page",
+      "default": 16
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sorting",
+      "label": "Enable sorting",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "filter_style",
+      "label": "Filter style",
+      "options": [
+        { "value": "list", "label": "List" },
+        { "value": "swatch", "label": "Swatches" }
+      ],
+      "default": "list"
+    },
+    {
+      "type": "select",
+      "id": "default_view",
+      "label": "Default view",
+      "options": [
+        { "value": "grid", "label": "Grid" },
+        { "value": "list", "label": "List" }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor on cards",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_infinite_scroll",
+      "label": "Enable load more (instead of pagination)",
+      "default": false
+    }
+  ],
+  "enabled_on": {
+    "templates": ["collection"]
+  }
+}
+{% endschema %}

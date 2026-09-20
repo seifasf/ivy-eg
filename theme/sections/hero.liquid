@@ -1,0 +1,100 @@
+{% render 'section-home-assets' %}
+
+<section
+  id="Hero-{{ section.id }}"
+  class="hero ivy-section"
+  data-animate-stagger
+>
+  <div class="hero__inner container">
+    {%- if section.settings.logo != blank -%}
+      {{
+        section.settings.logo
+        | image_url: width: 560
+        | image_tag:
+          class: 'hero__logo animate-fade-in-scale',
+          widths: '280, 560',
+          alt: shop.name,
+          loading: 'eager',
+          data-animate: true
+      }}
+    {%- elsif settings.logo != blank -%}
+      {{
+        settings.logo
+        | image_url: width: 560
+        | image_tag:
+          class: 'hero__logo animate-fade-in-scale',
+          widths: '280, 560',
+          alt: shop.name,
+          loading: 'eager',
+          data-animate: true
+      }}
+    {%- else -%}
+      <span class="hero__wordmark animate-fade-in-scale" data-animate>{{ shop.name }}</span>
+    {%- endif -%}
+
+    <div class="hero__slogan-wrap animate-fade-in-up" data-animate>
+      <span class="hero__rule" aria-hidden="true"></span>
+      <p class="hero__slogan">
+        {%- if section.settings.slogan != blank -%}
+          {{ section.settings.slogan }}
+        {%- else -%}
+          {{ 'general.tagline' | t }}
+        {%- endif -%}
+      </p>
+      <span class="hero__rule" aria-hidden="true"></span>
+    </div>
+
+    {%- if section.settings.button_label != blank -%}
+      <div class="hero__cta animate-fade-in-up" data-animate>
+        <a
+          href="{{ section.settings.button_link | default: routes.all_products_collection_url }}"
+          class="btn btn--primary btn--pill"
+        >
+          {{ section.settings.button_label }}
+        </a>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.hero.name",
+  "tag": "section",
+  "class": "section-hero",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "t:sections.hero.settings.logo.label",
+      "info": "t:sections.hero.settings.logo.info"
+    },
+    {
+      "type": "text",
+      "id": "slogan",
+      "label": "t:sections.hero.settings.slogan.label",
+      "default": "Your Everyday Wingman"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:sections.hero.settings.button_label.label",
+      "default": "Explore Collection"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "t:sections.hero.settings.button_link.label"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.hero.presets.name",
+      "settings": {
+        "slogan": "Your Everyday Wingman",
+        "button_label": "Explore Collection"
+      }
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,106 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "settings": {
+        "slogan": "Your Everyday Wingman",
+        "button_label": "Explore Collection",
+        "button_link": ""
+      }
+    },
+    "featured_collection": {
+      "type": "featured-collection",
+      "settings": {
+        "title": "Featured Products",
+        "subtitle": "Handpicked selections for the discerning individual",
+        "collection": "",
+        "products_to_show": 4,
+        "columns_desktop": 4,
+        "show_view_all": true
+      }
+    },
+    "multicolumn": {
+      "type": "multicolumn",
+      "settings": {
+        "title": "Why IVY",
+        "subtitle": ""
+      },
+      "blocks": {
+        "column_1": {
+          "type": "column",
+          "settings": {
+            "title": "Premium Quality",
+            "text": "Crafted materials built for everyday wear."
+          }
+        },
+        "column_2": {
+          "type": "column",
+          "settings": {
+            "title": "Minimal Design",
+            "text": "Confident monochrome style that speaks for itself."
+          }
+        },
+        "column_3": {
+          "type": "column",
+          "settings": {
+            "title": "Egypt Ready",
+            "text": "Shipping and support tailored for local customers."
+          }
+        }
+      },
+      "block_order": ["column_1", "column_2", "column_3"]
+    },
+    "rich_text_contact": {
+      "type": "rich-text",
+      "settings": {
+        "heading": "Get In Touch",
+        "text": "<p>Have questions? We're here to help you find what you need.</p>",
+        "alignment": "center",
+        "button_label": "Contact Us",
+        "button_link": "",
+        "button_label_2": "Send Us a Message",
+        "button_link_2": ""
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "heading": "Stay in the loop",
+        "text": "Be the first to know about new drops and exclusive offers.",
+        "button_label": "Subscribe"
+      }
+    },
+    "testimonials": {
+      "type": "testimonials",
+      "settings": {
+        "title": "What Our Customers Say",
+        "subtitle": ""
+      },
+      "blocks": {
+        "testimonial_1": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "Quality you can feel. Minimal design that still stands out.",
+            "author": "Ahmed M."
+          }
+        },
+        "testimonial_2": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "Fast delivery in Egypt and the fit is perfect.",
+            "author": "Karim S."
+          }
+        }
+      },
+      "block_order": ["testimonial_1", "testimonial_2"]
+    }
+  },
+  "order": [
+    "hero",
+    "featured_collection",
+    "multicolumn",
+    "rich_text_contact",
+    "newsletter",
+    "testimonials"
+  ]
+}

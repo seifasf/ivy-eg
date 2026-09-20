@@ -1,0 +1,70 @@
+{{ 'section-collection.css' | asset_url | stylesheet_tag }}
+
+<section class="list-collections section-padding" id="ListCollections-{{ section.id }}">
+  <div class="container">
+    {% render 'breadcrumbs', class: 'list-collections__breadcrumbs' %}
+
+    <h1 class="list-collections__title section-title">{{ section.settings.title | escape }}</h1>
+
+    {%- paginate collections by section.settings.collections_per_page -%}
+      <ul class="list-collections__grid grid grid--3" role="list">
+        {%- for coll in collections -%}
+          <li class="list-collections__item">
+            <a href="{{ coll.url }}" class="list-collections__card">
+              <div class="list-collections__media">
+                {%- if coll.featured_image -%}
+                  {{
+                    coll.featured_image
+                    | image_url: width: 800
+                    | image_tag:
+                      class: 'list-collections__image',
+                      loading: 'lazy',
+                      sizes: '(min-width: 768px) 33vw, 100vw',
+                      widths: '300, 500, 800',
+                      alt: coll.title | escape
+                  }}
+                {%- else -%}
+                  {{ 'collection-1' | placeholder_svg_tag: 'list-collections__placeholder' }}
+                {%- endif -%}
+              </div>
+              <h2 class="list-collections__name">{{ coll.title | escape }}</h2>
+              <p class="list-collections__count text-muted">
+                {{ 'collections.general.items_with_count' | t: count: coll.all_products_count }}
+              </p>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      {% render 'pagination', paginate: paginate, class: 'list-collections__pagination' %}
+    {%- endpaginate -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collections list",
+  "tag": "section",
+  "class": "section-list-collections",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Collections"
+    },
+    {
+      "type": "range",
+      "id": "collections_per_page",
+      "min": 6,
+      "max": 24,
+      "step": 3,
+      "label": "Collections per page",
+      "default": 12
+    }
+  ],
+  "enabled_on": {
+    "templates": ["list-collections"]
+  }
+}
+{% endschema %}

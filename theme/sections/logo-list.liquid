@@ -1,0 +1,84 @@
+{% render 'section-home-assets' %}
+
+<section id="LogoList-{{ section.id }}" class="ivy-section section-padding">
+  <div class="container">
+    {%- if section.settings.title != blank -%}
+      <header class="ivy-section__header" data-reveal>
+        <h2 class="ivy-section__title">{{ section.settings.title }}</h2>
+      </header>
+    {%- endif -%}
+
+    <ul class="logo-list__grid list-unstyled" role="list">
+      {%- if section.blocks.size > 0 -%}
+        {%- for block in section.blocks -%}
+          <li class="logo-list__item" {{ block.shopify_attributes }} data-reveal>
+            {%- if block.settings.link != blank -%}
+              <a href="{{ block.settings.link }}" {% if block.settings.open_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}>
+            {%- endif -%}
+            {%- if block.settings.image != blank -%}
+              {{
+                block.settings.image
+                | image_url: width: 240
+                | image_tag: loading: 'lazy', widths: '120, 240', alt: block.settings.image.alt | default: 'Partner logo'
+              }}
+            {%- else -%}
+              {{ 'logo' | placeholder_svg_tag: 'placeholder-svg' }}
+            {%- endif -%}
+            {%- if block.settings.link != blank -%}
+              </a>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      {%- else -%}
+        {%- for i in (1..4) -%}
+          <li class="logo-list__item" data-reveal>{{ 'logo' | placeholder_svg_tag: 'placeholder-svg' }}</li>
+        {%- endfor -%}
+      {%- endif -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.logo_list.name",
+  "tag": "section",
+  "class": "section-logo-list",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "t:sections.logo_list.settings.title.label",
+      "default": "As Featured In"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "logo",
+      "name": "t:sections.logo_list.blocks.logo.name",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:sections.logo_list.blocks.logo.settings.image.label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:sections.logo_list.blocks.logo.settings.link.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_new_tab",
+          "label": "t:sections.logo_list.blocks.logo.settings.open_new_tab.label",
+          "default": true
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.logo_list.presets.name"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,146 @@
+<div class="overlay cart-drawer__overlay" data-cart-drawer-overlay aria-hidden="true"></div>
+<aside
+  class="drawer cart-drawer"
+  data-cart-drawer
+  aria-hidden="true"
+  aria-labelledby="CartDrawerTitle"
+  role="dialog"
+>
+  <div class="drawer__header">
+    <h2 id="CartDrawerTitle" class="drawer__title">{{ 'cart.drawer.title' | t }}</h2>
+    <button type="button" class="site-header__icon-btn" data-cart-drawer-close aria-label="{{ 'general.close' | t }}">
+      {% render 'icon', icon: 'close' %}
+    </button>
+  </div>
+
+  <div class="drawer__body cart-drawer__body">
+    {% render 'cart-free-shipping', cart: cart, class: 'cart-drawer__free-shipping' %}
+
+    <span class="visually-hidden" data-cart-remove-label>{{ 'cart.general.remove' | t }}</span>
+    <span class="visually-hidden" data-cart-quantity-label>{{ 'cart.general.quantity' | t }}</span>
+
+    <div class="cart-drawer__empty empty-state" data-cart-drawer-empty {% if cart.item_count > 0 %}hidden{% endif %}>
+      <div class="empty-state__icon">{% render 'icon', icon: 'cart', size: 28 %}</div>
+      <h3 class="empty-state__title">{{ 'cart.general.empty' | t }}</h3>
+      <p class="empty-state__text">{{ 'cart.general.empty_description' | t }}</p>
+      <a href="{{ routes.all_products_collection_url }}" class="btn btn--primary btn--pill">
+        {{ 'general.continue_shopping' | t }}
+      </a>
+    </div>
+
+    <div class="cart-drawer__items" data-cart-drawer-items role="list">
+      {%- if cart.item_count > 0 -%}
+        {% render 'cart-drawer-items', cart: cart %}
+      {%- endif -%}
+    </div>
+
+    {%- if section.settings.show_upsell and section.blocks.size > 0 -%}
+      <div class="cart-drawer__upsell" data-cart-drawer-upsell {% if cart.item_count == 0 %}hidden{% endif %}>
+        <p class="cart-drawer__upsell-title">{{ section.settings.upsell_heading | escape }}</p>
+        <div class="cart-drawer__upsell-grid">
+          {%- for block in section.blocks -%}
+            {%- if block.settings.product != blank -%}
+              <a href="{{ block.settings.product.url }}" class="cart-drawer__upsell-link" {{ block.shopify_attributes }}>
+                {{
+                  block.settings.product.featured_media
+                  | image_url: width: 120
+                  | image_tag: loading: 'lazy', class: 'cart-drawer__upsell-image', alt: block.settings.product.title
+                }}
+                <span class="cart-drawer__upsell-name">{{ block.settings.product.title | escape }}</span>
+              </a>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+
+  <div class="drawer__footer cart-drawer__footer" data-cart-drawer-footer {% if cart.item_count == 0 %}hidden{% endif %}>
+    {%- if section.settings.enable_note -%}
+      <details class="cart-drawer__note">
+        <summary class="cart-drawer__note-summary">{{ 'cart.general.note' | t }}</summary>
+        <label class="visually-hidden" for="CartDrawerNote">{{ 'cart.general.note' | t }}</label>
+        <textarea
+          id="CartDrawerNote"
+          class="field__input cart-drawer__note-input"
+          name="note"
+          rows="2"
+          data-cart-note
+          placeholder="{{ 'cart.general.note_placeholder' | t }}"
+        >{{ cart.note }}</textarea>
+      </details>
+    {%- endif -%}
+
+    <div class="cart-drawer__footer-row">
+      <span class="cart-drawer__subtotal-label">{{ 'cart.general.subtotal' | t }}</span>
+      <span class="cart-drawer__subtotal-value" data-cart-subtotal>{{ cart.total_price | money }}</span>
+    </div>
+    <p class="cart-drawer__note-text">{{ 'cart.general.taxes_and_shipping_at_checkout' | t }}</p>
+    <div class="cart-drawer__actions">
+      <a href="{{ routes.cart_url }}" class="btn btn--secondary btn--pill">{{ 'cart.general.view_cart' | t }}</a>
+      <form action="{{ routes.cart_url }}" method="post" id="CartDrawerCheckout">
+        <button type="submit" name="checkout" class="btn btn--primary btn--pill">{{ 'cart.general.checkout' | t }}</button>
+      </form>
+    </div>
+  </div>
+</aside>
+
+<script>
+  (function () {
+    const note = document.querySelector('[data-cart-note]');
+    if (!note) return;
+    let t;
+    note.addEventListener('input', () => {
+      clearTimeout(t);
+      t = setTimeout(async () => {
+        await fetch(`${window.Shopify?.routes?.root || '/'}cart/update.js`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ note: note.value }),
+        });
+      }, 500);
+    });
+  })();
+</script>
+
+  <div class="cart-drawer__loading" hidden data-cart-loading>{% render 'loading-spinner' %}</div>
+
+{% schema %}
+{
+  "name": "Cart drawer",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_note",
+      "label": "Enable order note",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_upsell",
+      "label": "Show upsell products",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "upsell_heading",
+      "label": "Upsell heading",
+      "default": "You might also like"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "upsell",
+      "name": "Upsell product",
+      "limit": 3,
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

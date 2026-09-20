@@ -1,0 +1,158 @@
+{{ 'section-product.css' | asset_url | stylesheet_tag }}
+
+<section class="cart-page section-padding" id="Cart-{{ section.id }}">
+  <div class="container">
+    {% render 'breadcrumbs', class: 'cart-page__breadcrumbs' %}
+
+    <h1 class="cart-page__title">{{ 'cart.general.title' | t }}</h1>
+
+    {%- if cart.item_count == 0 -%}
+      <div class="cart-page__empty empty-state">
+        <div class="empty-state__icon">{% render 'icon', icon: 'cart', size: 28 %}</div>
+        <h2 class="empty-state__title">{{ 'cart.general.empty' | t }}</h2>
+        <p class="empty-state__text">{{ 'cart.general.empty_description' | t }}</p>
+        <a href="{{ routes.all_products_collection_url }}" class="btn btn--primary btn--pill">
+          {{ 'general.continue_shopping' | t }}
+        </a>
+      </div>
+    {%- else -%}
+      <form action="{{ routes.cart_url }}" method="post" id="CartForm" class="cart-page__form" data-cart-form>
+        <div class="cart-page__layout">
+          <div class="cart-page__items">
+            {% render 'cart-free-shipping', cart: cart, class: 'cart-page__free-shipping' %}
+
+            <ul class="cart-page__list" role="list">
+              {%- for item in cart.items -%}
+                <li class="cart-page__line" data-cart-line="{{ item.key }}">
+                  <div class="cart-page__line-media">
+                    {%- if item.image -%}
+                      <a href="{{ item.url }}">
+                        {{
+                          item.image
+                          | image_url: width: 240
+                          | image_tag:
+                            class: 'cart-page__line-image',
+                            loading: 'lazy',
+                            alt: item.title | escape
+                        }}
+                      </a>
+                    {%- endif -%}
+                  </div>
+                  <div class="cart-page__line-details">
+                    <a href="{{ item.url }}" class="cart-page__line-title">{{ item.product.title | escape }}</a>
+                    {%- unless item.variant.title == 'Default Title' -%}
+                      <p class="cart-page__line-variant text-muted">{{ item.variant.title | escape }}</p>
+                    {%- endunless -%}
+                    <p class="cart-page__line-price">{{ item.final_line_price | money }}</p>
+
+                    <div class="cart-page__line-actions">
+                      <div class="quantity">
+                        <label class="visually-hidden" for="Quantity-{{ item.key }}">{{ 'cart.general.quantity' | t }}</label>
+                        <button type="button" class="quantity__button" data-quantity-minus aria-label="−">−</button>
+                        <input
+                          id="Quantity-{{ item.key }}"
+                          class="quantity__input"
+                          type="number"
+                          name="updates[]"
+                          value="{{ item.quantity }}"
+                          min="0"
+                          data-index="{{ forloop.index }}"
+                        >
+                        <button type="button" class="quantity__button" data-quantity-plus aria-label="+">+</button>
+                      </div>
+                      <a href="{{ item.url_to_remove }}" class="cart-page__remove">{{ 'cart.general.remove' | t }}</a>
+                    </div>
+                  </div>
+                </li>
+              {%- endfor -%}
+            </ul>
+
+            {%- if section.settings.enable_note -%}
+              <div class="cart-page__note">
+                <label for="CartNote">{{ 'cart.general.note' | t }}</label>
+                <textarea id="CartNote" name="note" class="field__input cart-page__note-input" rows="3">{{ cart.note }}</textarea>
+              </div>
+            {%- endif -%}
+          </div>
+
+          <aside class="cart-page__summary">
+            <div class="cart-page__summary-card">
+              <div class="cart-page__summary-row">
+                <span>{{ 'cart.general.subtotal' | t }}</span>
+                <span>{{ cart.total_price | money }}</span>
+              </div>
+              <p class="cart-page__summary-note text-muted">{{ 'cart.general.taxes_and_shipping_at_checkout' | t }}</p>
+              <button type="submit" name="update" class="btn btn--secondary btn--pill cart-page__update">
+                {{ 'cart.general.update' | t }}
+              </button>
+              <button type="submit" name="checkout" class="btn btn--primary btn--pill cart-page__checkout">
+                {{ 'cart.general.checkout' | t }}
+              </button>
+            </div>
+          </aside>
+        </div>
+      </form>
+
+      {%- if section.settings.show_upsell -%}
+        <div class="cart-page__upsell">
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'upsell_product' and block.settings.product != blank -%}
+              <div {{ block.shopify_attributes }}>
+                {% render 'product-card', product: block.settings.product %}
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</section>
+
+<script>
+  document.querySelector('#Cart-{{ section.id }}')?.addEventListener('click', (e) => {
+    const line = e.target.closest('.cart-page__line');
+    if (!line) return;
+    const input = line.querySelector('.quantity__input');
+    if (!input) return;
+    if (e.target.closest('[data-quantity-minus]')) input.value = Math.max(0, parseInt(input.value, 10) - 1);
+    if (e.target.closest('[data-quantity-plus]')) input.value = parseInt(input.value, 10) + 1;
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Cart",
+  "tag": "section",
+  "class": "section-main-cart",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_note",
+      "label": "Enable order note",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_upsell",
+      "label": "Show upsell products",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "upsell_product",
+      "name": "Upsell product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "templates": ["cart"]
+  }
+}
+{% endschema %}

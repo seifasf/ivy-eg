@@ -2,6 +2,21 @@
 
 A high-end, modern e-commerce website targeting premium sporty men (A, B, S class). Built with React, featuring a sleek dark theme with electric blue and gold accents.
 
+## Shopify theme (Online Store 2.0)
+
+A production-ready Shopify theme that recreates this brand in Liquid lives in **[`theme/`](./theme/)**.
+
+- Design tokens & UX mapping: [`DESIGN_SPEC.md`](./DESIGN_SPEC.md)
+- Build assumptions: [`ASSUMPTIONS.md`](./ASSUMPTIONS.md)
+- Setup / `shopify theme dev` / go-live: [`theme/README.md`](./theme/README.md)
+
+```bash
+cd theme
+shopify theme dev --store YOUR-STORE.myshopify.com
+```
+
+`shopify theme check` passes with **0 offenses**.
+
 ## 🎯 Target Audience
 - **Demographic**: Athletic, sporty men
 - **Class**: Premium (A, B, S class)

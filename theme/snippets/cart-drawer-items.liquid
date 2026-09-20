@@ -1,0 +1,52 @@
+{% comment %}
+  Cart drawer line items (SSR + structure reference).
+  Accepts:
+  - cart: {Object} (required)
+{% endcomment %}
+{%- for item in cart.items -%}
+  <div class="cart-drawer__item" data-cart-item data-key="{{ item.key }}" role="listitem">
+    <div class="cart-drawer__item-media">
+      {%- if item.image -%}
+        {{
+          item.image
+          | image_url: width: 160
+          | image_tag:
+            class: 'cart-drawer__item-image',
+            loading: 'lazy',
+            width: 80,
+            height: 80,
+            alt: item.title | escape
+        }}
+      {%- endif -%}
+    </div>
+    <div class="cart-drawer__item-details">
+      <a href="{{ item.url }}" class="cart-drawer__item-title">{{ item.product.title | escape }}</a>
+      {%- unless item.variant.title == 'Default Title' -%}
+        <p class="cart-drawer__item-variant">{{ item.variant.title | escape }}</p>
+      {%- endunless -%}
+      <p class="cart-drawer__item-price">{{ item.final_line_price | money }}</p>
+      <div class="cart-drawer__item-actions">
+        <div class="quantity" data-quantity>
+          <button type="button" class="quantity__button" data-quantity-minus aria-label="−">
+            <span aria-hidden="true">−</span>
+          </button>
+          <input
+            type="number"
+            class="quantity__input"
+            value="{{ item.quantity }}"
+            min="0"
+            data-quantity-input
+            data-line-key="{{ item.key }}"
+            aria-label="{{ 'cart.general.quantity' | t }}"
+          >
+          <button type="button" class="quantity__button" data-quantity-plus aria-label="+">
+            <span aria-hidden="true">+</span>
+          </button>
+        </div>
+        <button type="button" class="cart-drawer__remove" data-remove-line="{{ item.key }}">
+          {{ 'cart.general.remove' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+{%- endfor -%}

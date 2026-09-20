@@ -1,0 +1,394 @@
+{
+  "general": {
+    "tagline": "Your Everyday Wingman",
+    "search": "Search",
+    "cart": "Cart",
+    "menu": "Menu",
+    "close": "Close",
+    "account": "Account",
+    "loading": "Loading",
+    "share": "Share",
+    "copy_link": "Copy link",
+    "link_copied": "Link copied",
+    "pagination": {
+      "label": "Pagination",
+      "previous": "Previous page",
+      "next": "Next page",
+      "page": "Page {{ number }}"
+    },
+    "continue_shopping": "Continue shopping",
+    "home": "Home"
+  },
+  "accessibility": {
+    "skip_to_content": "Skip to content",
+    "close": "Close",
+    "loading": "Loading",
+    "unit_price_separator": "per",
+    "vendor": "Vendor",
+    "error": "Error",
+    "refresh_page": "Refresh page",
+    "link_messages": {
+      "new_window": "Opens in a new window"
+    }
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Add to cart",
+      "view_details": "View details",
+      "sold_out": "Sold out",
+      "unavailable": "Unavailable",
+      "on_sale": "Sale",
+      "quantity": "Quantity",
+      "price": {
+        "regular_price": "Regular price",
+        "sale_price": "Sale price",
+        "from_price_html": "From {{ price }}",
+        "unit_price": "Unit price"
+      },
+      "media": {
+        "load_image": "Load image {{ index }}",
+        "load_video": "Load video {{ index }}",
+        "zoom": "Zoom image"
+      },
+      "variant_picker": {
+        "choose_option": "Choose {{ option }}"
+      },
+      "inventory": {
+        "in_stock": "In stock",
+        "low_stock": "Only {{ count }} left",
+        "out_of_stock": "Out of stock"
+      },
+      "recommendations": {
+        "empty": "No recommendations yet"
+      },
+      "shipping": {
+        "default": "Shipping calculated at checkout. Cash on delivery available where enabled."
+      }
+    }
+  },
+  "collections": {
+    "general": {
+      "empty": "No products found",
+      "items_with_count": {
+        "one": "{{ count }} product",
+        "other": "{{ count }} products"
+      },
+      "load_more": "Load more"
+    },
+    "sorting": {
+      "title": "Sort by"
+    },
+    "filters": {
+      "title": "Filters",
+      "filter_and_sort": "Filter and sort",
+      "clear_all": "Clear all",
+      "apply": "Apply",
+      "from": "From",
+      "to": "To",
+      "active": "Active filters",
+      "empty": "No filters available"
+    },
+    "view": {
+      "grid": "Grid view",
+      "list": "List view"
+    }
+  },
+  "cart": {
+    "general": {
+      "title": "Your cart",
+      "empty": "Your cart is empty",
+      "empty_description": "Explore our collection and find your next favorite piece.",
+      "note": "Order note",
+      "subtotal": "Subtotal",
+      "taxes_and_shipping_at_checkout": "Taxes and shipping calculated at checkout",
+      "update": "Update",
+      "checkout": "Checkout",
+      "view_cart": "View cart",
+      "remove": "Remove",
+      "quantity": "Quantity",
+      "free_shipping": {
+        "remaining_html": "Spend {{ amount }} more for free shipping",
+        "qualified": "You qualify for free shipping"
+      },
+      "note_placeholder": "Order notes (optional)"
+    },
+    "drawer": {
+      "title": "Cart",
+      "open": "Open cart"
+    }
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search products",
+    "no_results": "No results for \"{{ terms }}\"",
+    "results_with_count": {
+      "one": "{{ count }} result",
+      "other": "{{ count }} results"
+    },
+    "predictive": {
+      "products": "Products",
+      "collections": "Collections",
+      "pages": "Pages",
+      "articles": "Articles",
+      "view_all": "View all results"
+    }
+  },
+  "footer": {
+    "contact_us": "Contact us",
+    "copyright_html": "&copy; {{ year }} {{ shop_name }}. All rights reserved.",
+    "newsletter": {
+      "email": "Email",
+      "placeholder": "Your email",
+      "submit": "Subscribe",
+      "success": "Thanks for subscribing."
+    },
+    "payment": {
+      "title": "Payment methods"
+    }
+  },
+  "header": {
+    "announcement": "Announcement",
+    "menu": "Menu",
+    "products": "Products",
+    "contact": "Contact"
+  },
+  "breadcrumbs": {
+    "home": "Home",
+    "label": "Breadcrumbs"
+  },
+  "localization": {
+    "country_label": "Country/region",
+    "language_label": "Language",
+    "update_country": "Update country/region",
+    "update_language": "Update language"
+  },
+  "password": {
+    "title": "Opening soon",
+    "password_label": "Password",
+    "password_submit": "Enter",
+    "admin_link_html": "Are you the store owner? <a href=\"/admin\">Log in here</a>",
+    "powered_by_shopify_html": "This shop will be powered by {{ shopify }}"
+  },
+  "social": {
+    "follow_on": "Follow us on {{ social }}"
+  },
+  "recently_viewed": {
+    "title": "Recently viewed"
+  },
+  "contact": {
+    "info": {
+      "email": "Email",
+      "phone": "Phone",
+      "hours": "Hours",
+      "follow": "Follow IVY"
+    },
+    "form": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "message": "Message",
+      "submit": "Send message",
+      "success": "Thanks for reaching out. We'll get back to you soon.",
+      "error_heading": "Please fix the following:"
+    }
+  },
+  "faq": {
+    "empty": "No questions have been added yet."
+  },
+  "blogs": {
+    "general": {
+      "empty": "No articles yet."
+    },
+    "article": {
+      "read_more": "Read more",
+      "by_author": "By {{ author }}",
+      "back_to_blog": "Back to {{ title }}"
+    },
+    "comments": {
+      "title": "Comments",
+      "form_title": "Leave a comment",
+      "name": "Name",
+      "email": "Email",
+      "message": "Comment",
+      "post": "Post comment",
+      "success": "Your comment was posted successfully."
+    }
+  },
+  "customer": {
+    "login": {
+      "title": "Login",
+      "email": "Email",
+      "password": "Password",
+      "sign_in": "Sign in",
+      "create_account": "Create account",
+      "forgot_password": "Forgot password?"
+    },
+    "register": {
+      "title": "Create account",
+      "first_name": "First name",
+      "last_name": "Last name",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Create",
+      "sign_in": "Already have an account? Sign in"
+    },
+    "recover_password": {
+      "title": "Reset your password",
+      "subtext": "We will send you an email to reset your password.",
+      "email": "Email",
+      "submit": "Submit",
+      "success": "We've sent you an email with a link to update your password.",
+      "cancel": "Cancel"
+    },
+    "reset_password": {
+      "title": "Reset account password",
+      "subtext": "Enter a new password for your account.",
+      "password": "Password",
+      "password_confirm": "Confirm password",
+      "submit": "Reset password"
+    },
+    "activate_account": {
+      "title": "Activate account",
+      "subtext": "Create your password to activate your account.",
+      "password": "Password",
+      "password_confirm": "Confirm password",
+      "submit": "Activate account",
+      "cancel": "Decline invitation"
+    },
+    "account": {
+      "title": "Account",
+      "welcome": "Welcome back, {{ name }}",
+      "navigation": "Account navigation",
+      "orders": "Orders",
+      "addresses": "Addresses",
+      "log_out": "Log out",
+      "order_history": "Order history",
+      "no_orders": "You haven't placed any orders yet.",
+      "details": "Account details",
+      "view_addresses": "View addresses"
+    },
+    "orders": {
+      "order_number": "Order",
+      "date": "Date",
+      "payment_status": "Payment",
+      "fulfillment_status": "Fulfillment",
+      "total": "Total"
+    },
+    "order": {
+      "title": "Order {{ name }}",
+      "back_to_account": "Return to account",
+      "date": "Placed on",
+      "payment_status": "Payment status",
+      "fulfillment_status": "Fulfillment status",
+      "items": "Items",
+      "quantity": "Qty {{ quantity }}",
+      "subtotal": "Subtotal",
+      "discount": "Discount",
+      "shipping": "Shipping",
+      "tax": "Tax",
+      "total": "Total",
+      "billing_address": "Billing address",
+      "shipping_address": "Shipping address"
+    },
+    "addresses": {
+      "title": "Addresses",
+      "back_to_account": "Return to account",
+      "add_new": "Add a new address",
+      "add": "Add address",
+      "update": "Update address",
+      "edit": "Edit",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "default": "Default",
+      "set_default": "Set as default address",
+      "first_name": "First name",
+      "last_name": "Last name",
+      "company": "Company",
+      "address1": "Address",
+      "address2": "Apartment, suite, etc.",
+      "city": "City",
+      "country": "Country/region",
+      "province": "Province",
+      "zip": "Postal code",
+      "phone": "Phone"
+    }
+  },
+  "sections": {
+    "blog_posts": {
+      "empty_text": "Articles will appear here once published.",
+      "empty_title": "No posts yet",
+      "read_more": "Read more",
+      "view_all": "View all"
+    },
+    "collapsible_content": {
+      "defaults": {
+        "answer": "Share shipping, returns, or product details here.",
+        "question": "Frequently asked question"
+      }
+    },
+    "collection_list": {
+      "empty": "Add collections to this section."
+    },
+    "countdown": {
+      "expired": "Offer ended",
+      "labels": {
+        "days": "Days",
+        "hours": "Hours",
+        "minutes": "Min",
+        "seconds": "Sec"
+      }
+    },
+    "custom_liquid": {
+      "empty": "Add custom Liquid in the theme editor."
+    },
+    "featured_collection": {
+      "empty_text": "Coming Soon",
+      "empty_title": "No Products Available",
+      "view_all": "View all"
+    },
+    "featured_product": {
+      "empty_text": "Select a product in the theme editor.",
+      "empty_title": "Featured product"
+    },
+    "marquee": {
+      "accessibility": {
+        "label": "Scrolling announcements"
+      },
+      "defaults": {
+        "shipping": "Free shipping · New drops · Your Everyday Wingman"
+      }
+    },
+    "multicolumn": {
+      "defaults": {
+        "text": "Premium essentials for the discerning individual.",
+        "title": "Feature"
+      }
+    },
+    "newsletter": {
+      "email_label": "Email",
+      "email_placeholder": "Enter your email",
+      "error": "Something went wrong. Please try again.",
+      "submit": "Subscribe",
+      "success": "Thanks for subscribing."
+    },
+    "slideshow": {
+      "accessibility": {
+        "carousel": "Slideshow",
+        "next": "Next slide",
+        "of": "of",
+        "previous": "Previous slide",
+        "slide": "Slide"
+      },
+      "defaults": {
+        "heading": "IVY",
+        "text": "Your Everyday Wingman"
+      }
+    },
+    "testimonials": {
+      "defaults": {
+        "author": "IVY Customer",
+        "quote": "Quality that shows up every day."
+      }
+    }
+  }
+}

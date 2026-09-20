@@ -1,0 +1,77 @@
+{{ 'section-product.css' | asset_url | stylesheet_tag }}
+
+<section
+  class="recently-viewed section-padding"
+  id="RecentlyViewed-{{ section.id }}"
+  data-recently-viewed
+  data-section-id="{{ section.id }}"
+  data-product-id="{{ product.id | default: '' }}"
+  data-max-products="{{ section.settings.products_to_show }}"
+  hidden
+>
+  <div class="container">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="section-title">{{ section.settings.heading | escape }}</h2>
+    {%- endif -%}
+    <div class="recently-viewed__grid grid grid--4" data-recently-viewed-grid role="list"></div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    const section = document.querySelector('#RecentlyViewed-{{ section.id }}');
+    const grid = section?.querySelector('[data-recently-viewed-grid]');
+    if (!section || !grid || !window.IVY?.getRecentlyViewed) return;
+
+    const currentId = section.dataset.productId ? parseInt(section.dataset.productId, 10) : null;
+    const max = parseInt(section.dataset.maxProducts, 10) || 4;
+    const items = window.IVY.getRecentlyViewed().filter((p) => !currentId || p.id !== currentId).slice(0, max);
+
+    if (!items.length) return;
+
+    section.hidden = false;
+    grid.innerHTML = items
+      .map(
+        (p) => `
+      <article class="product-card" data-product-id="${p.id}">
+        <a href="${p.url}" class="product-card__media-link" tabindex="-1" aria-hidden="true">
+          <div class="product-card__media">
+            ${p.featured_image ? `<img src="${p.featured_image}" alt="${p.title.replace(/"/g, '&quot;')}" class="product-card__image" loading="lazy">` : ''}
+          </div>
+        </a>
+        <div class="product-card__info">
+          <h3 class="product-card__title"><a href="${p.url}" class="product-card__title-link">${p.title}</a></h3>
+        </div>
+      </article>`
+      )
+      .join('');
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Recently viewed",
+  "tag": "section",
+  "class": "section-recently-viewed",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Recently viewed"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "label": "Products to show",
+      "default": 4
+    }
+  ],
+  "enabled_on": {
+    "templates": ["product", "cart", "index"]
+  }
+}
+{% endschema %}

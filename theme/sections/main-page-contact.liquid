@@ -1,0 +1,239 @@
+{{ 'section-pages.css' | asset_url | stylesheet_tag }}
+
+<section class="page-section contact-page">
+  <div class="page-hero">
+    <h1 class="page-hero__title">
+      {%- if section.settings.heading != blank -%}
+        {{ section.settings.heading | escape }}
+      {%- else -%}
+        {{ page.title | escape }}
+      {%- endif -%}
+    </h1>
+    {%- if section.settings.subheading != blank -%}
+      <p class="page-hero__subtitle">{{ section.settings.subheading | escape }}</p>
+    {%- endif -%}
+  </div>
+
+  <div class="page-content contact-page__grid" style="padding-block: {{ section.settings.padding_top }}px {{ section.settings.padding_bottom }}px;">
+    <aside class="contact-panel">
+      <h2 class="contact-panel__title">{{ section.settings.info_heading | escape }}</h2>
+      {%- if section.settings.info_text != blank -%}
+        <p class="contact-panel__text">{{ section.settings.info_text | escape }}</p>
+      {%- endif -%}
+
+      <div class="contact-info">
+        {%- if section.settings.email != blank -%}
+          <div class="contact-info__item">
+            <div class="contact-info__icon">{% render 'icon', icon: 'mail', size: 22 %}</div>
+            <div>
+              <p class="contact-info__label">{{ 'contact.info.email' | t }}</p>
+              <p class="contact-info__value">
+                <a href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a>
+              </p>
+            </div>
+          </div>
+        {%- endif -%}
+        {%- if section.settings.phone != blank -%}
+          <div class="contact-info__item">
+            <div class="contact-info__icon">{% render 'icon', icon: 'link', size: 22 %}</div>
+            <div>
+              <p class="contact-info__label">{{ 'contact.info.phone' | t }}</p>
+              <p class="contact-info__value">
+                <a href="tel:{{ section.settings.phone | replace: ' ', '' | escape }}">{{ section.settings.phone | escape }}</a>
+              </p>
+            </div>
+          </div>
+        {%- endif -%}
+        {%- if section.settings.hours != blank -%}
+          <div class="contact-info__item">
+            <div class="contact-info__icon">{% render 'icon', icon: 'check', size: 22 %}</div>
+            <div>
+              <p class="contact-info__label">{{ 'contact.info.hours' | t }}</p>
+              <p class="contact-info__value">{{ section.settings.hours | escape }}</p>
+            </div>
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- if section.settings.show_social -%}
+        <div class="contact-panel__social">
+          <p class="contact-info__label">{{ 'contact.info.follow' | t }}</p>
+          {% render 'social-icons', class: 'site-footer__social' %}
+        </div>
+      {%- endif -%}
+    </aside>
+
+    <div class="contact-panel contact-form">
+      <h2 class="contact-form__title">{{ section.settings.form_heading | escape }}</h2>
+
+      {%- form 'contact', id: 'ContactForm', class: 'contact-form__inner' -%}
+        {%- if form.posted_successfully? -%}
+          <p class="contact-form__success" role="status">{{ 'contact.form.success' | t }}</p>
+        {%- endif -%}
+
+        {%- if form.errors -%}
+          <div class="contact-form__errors" role="alert">
+            <p>{{ 'contact.form.error_heading' | t }}</p>
+            <ul>
+              {%- for field in form.errors -%}
+                <li>
+                  {%- if field == 'form' -%}
+                    {{ form.errors.messages[field] }}
+                  {%- else -%}
+                    {{ form.errors.translated_fields[field] | capitalize }} {{ form.errors.messages[field] }}
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
+
+        <div class="field">
+          <label class="field__label" for="ContactForm-name">{{ 'contact.form.name' | t }}</label>
+          <input
+            class="field__input"
+            autocomplete="name"
+            type="text"
+            id="ContactForm-name"
+            name="contact[name]"
+            value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}"
+            placeholder="{{ 'contact.form.name' | t }}"
+          >
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="ContactForm-email">{{ 'contact.form.email' | t }}</label>
+          <input
+            class="field__input"
+            autocomplete="email"
+            type="email"
+            id="ContactForm-email"
+            name="contact[email]"
+            spellcheck="false"
+            autocapitalize="off"
+            value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+            aria-required="true"
+            {% if form.errors contains 'email' %}aria-invalid="true"{% endif %}
+            placeholder="{{ 'contact.form.email' | t }}"
+          >
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="ContactForm-phone">{{ 'contact.form.phone' | t }}</label>
+          <input
+            class="field__input"
+            autocomplete="tel"
+            type="tel"
+            id="ContactForm-phone"
+            name="contact[phone]"
+            value="{% if form.phone %}{{ form.phone }}{% endif %}"
+            placeholder="{{ 'contact.form.phone' | t }}"
+          >
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="ContactForm-body">{{ 'contact.form.message' | t }}</label>
+          <textarea
+            class="field__textarea"
+            rows="6"
+            id="ContactForm-body"
+            name="contact[body]"
+            placeholder="{{ 'contact.form.message' | t }}"
+          >{% if form.body %}{{ form.body }}{% endif %}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--pill">
+          {{ 'contact.form.submit' | t }}
+        </button>
+      {%- endform -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.main_page_contact.name",
+  "tag": "section",
+  "class": "section-main-page-contact",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:sections.main_page_contact.settings.heading.label",
+      "default": "Get In Touch"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "t:sections.main_page_contact.settings.subheading.label",
+      "default": "Have questions? We're here to help you find what you need."
+    },
+    {
+      "type": "text",
+      "id": "info_heading",
+      "label": "t:sections.main_page_contact.settings.info_heading.label",
+      "default": "Contact Information"
+    },
+    {
+      "type": "textarea",
+      "id": "info_text",
+      "label": "t:sections.main_page_contact.settings.info_text.label",
+      "default": "Reach out anytime — our team responds within one business day."
+    },
+    {
+      "type": "text",
+      "id": "email",
+      "label": "t:sections.main_page_contact.settings.email.label",
+      "default": "hello@ivywear.eg"
+    },
+    {
+      "type": "text",
+      "id": "phone",
+      "label": "t:sections.main_page_contact.settings.phone.label"
+    },
+    {
+      "type": "text",
+      "id": "hours",
+      "label": "t:sections.main_page_contact.settings.hours.label",
+      "default": "Sun–Thu, 10:00–18:00 EET"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social",
+      "label": "t:sections.main_page_contact.settings.show_social.label",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "form_heading",
+      "label": "t:sections.main_page_contact.settings.form_heading.label",
+      "default": "Send Us a Message"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.main_page_contact.presets.name"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,113 @@
+.product-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition:
+    transform var(--duration-short) ease,
+    border-color var(--duration-short) ease,
+    box-shadow var(--duration-short) ease;
+}
+
+.product-card:hover {
+  border-color: var(--color-foreground-muted);
+  transform: translateY(-3px);
+}
+
+.product-card__media {
+  position: relative;
+  aspect-ratio: 1;
+  background-color: var(--color-surface);
+  overflow: hidden;
+}
+
+.product-card__image {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  transition: transform var(--duration-default) ease;
+}
+
+.product-card:hover .product-card__image {
+  transform: scale(1.03);
+}
+
+.product-card__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 100%;
+  color: var(--color-foreground-muted);
+  font-size: 0.875rem;
+}
+
+.product-card__info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--gap-sm);
+  padding: var(--gap-lg);
+  flex: 1;
+}
+
+.product-card__vendor {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-foreground-muted);
+}
+
+.product-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.product-card__title-link:hover {
+  text-decoration: none;
+  color: var(--color-foreground-muted);
+}
+
+.product-card__description {
+  font-size: 0.875rem;
+  color: var(--color-foreground-muted);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-card__price {
+  font-size: 1.125rem;
+  margin-block: var(--gap-xs);
+}
+
+.product-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  inline-size: 100%;
+  margin-block-start: auto;
+}
+
+.product-card__actions .btn {
+  inline-size: 100%;
+}
+
+@media screen and (min-width: 480px) {
+  .product-card__actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .product-card__actions .btn {
+    inline-size: auto;
+    flex: 1 1 auto;
+  }
+}

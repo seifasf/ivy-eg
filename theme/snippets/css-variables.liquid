@@ -1,0 +1,79 @@
+{% liquid
+  assign font_body = settings.font_body
+  assign font_heading = settings.font_heading
+%}
+<style>
+  {{ font_body | font_face: font_display: 'swap' }}
+  {{ font_heading | font_face: font_display: 'swap' }}
+
+  :root {
+    --color-background: {{ settings.color_background }};
+    --color-surface: {{ settings.color_surface }};
+    --color-surface-2: {{ settings.color_surface_2 }};
+    --color-foreground: {{ settings.color_foreground }};
+    --color-foreground-muted: {{ settings.color_foreground_muted }};
+    --color-border: {{ settings.color_border }};
+    --color-border-subtle: rgba(255, 255, 255, 0.1);
+    --color-button: {{ settings.color_button }};
+    --color-button-text: {{ settings.color_button_label }};
+    --color-button-outline: {{ settings.color_foreground }};
+    --color-success: #4ade80;
+    --color-warning: #fbbf24;
+    --color-error: {{ settings.color_sale }};
+    --color-sale: {{ settings.color_sale }};
+
+    --font-body-family: {{ font_body.family }}, 'Inter', system-ui, sans-serif;
+    --font-body-style: {{ font_body.style }};
+    --font-body-weight: {{ font_body.weight }};
+    --font-heading-family: {{ font_heading.family }}, 'Inter', system-ui, sans-serif;
+    --font-heading-style: {{ font_heading.style }};
+    --font-heading-weight: {{ font_heading.weight }};
+    --font-size-base: {{ settings.font_size_base }}px;
+
+    --page-width: {{ settings.page_width }}px;
+    --header-max-width: 1600px;
+    --header-offset: 5.5rem;
+    --header-offset-scrolled: 4.75rem;
+
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-pill: 9999px;
+    --radius-circle: 50%;
+
+    --shadow-header: 0 4px 20px rgba(0, 0, 0, 0.5);
+    --shadow-cta: 0 10px 30px rgba(255, 255, 255, 0.1);
+    --backdrop-blur: blur(10px);
+
+    --gap-xs: 0.5rem;
+    --gap-sm: 0.75rem;
+    --gap-md: 1rem;
+    --gap-lg: 1.5rem;
+    --gap-xl: 2rem;
+    --gap-2xl: 2.5rem;
+    --gap-3xl: 3rem;
+
+    --section-padding-mobile: 2.5rem;
+    --section-padding-desktop: 5rem;
+    --container-padding: clamp(1.25rem, 4vw, 3rem);
+
+    --duration-short: 150ms;
+    --duration-default: 300ms;
+    --duration-long: 1200ms;
+    --ease-drawer: cubic-bezier(0.4, 0, 0.2, 1);
+
+    --logo-width: {{ settings.logo_width }}px;
+
+    --cart-type: {{ settings.cart_type }};
+    --free-shipping-threshold: {{ settings.free_shipping_threshold | times: 100 }};
+    --show-free-shipping-bar: {% if settings.show_free_shipping_bar %}1{% else %}0{% endif %};
+    --animations-enabled: {% if settings.enable_animations %}1{% else %}0{% endif %};
+    --predictive-search-enabled: {% if settings.predictive_search_enabled %}1{% else %}0{% endif %};
+  }
+
+  @media screen and (min-width: 768px) {
+    :root {
+      --header-offset: 6.875rem;
+    }
+  }
+</style>

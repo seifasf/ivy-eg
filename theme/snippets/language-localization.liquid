@@ -1,0 +1,34 @@
+{% comment %}
+  Language selector.
+  Accepts:
+  - class: {String}
+{% endcomment %}
+{%- if settings.show_language_selector and localization.available_languages.size > 1 -%}
+  <div class="localization localization--language {{ class }}">
+    {%- form 'localization', id: 'LanguageForm', class: 'localization__form' -%}
+      <label class="visually-hidden" for="LanguageSelector">
+        {{ 'localization.language_label' | t }}
+      </label>
+      <div class="localization__select-wrapper">
+        <select
+          id="LanguageSelector"
+          class="localization__select field__input"
+          name="locale_code"
+          aria-label="{{ 'localization.language_label' | t }}"
+          onchange="this.form.submit()"
+        >
+          {%- for language in localization.available_languages -%}
+            <option
+              value="{{ language.iso_code }}"
+              lang="{{ language.iso_code }}"
+              {%- if language.iso_code == localization.language.iso_code %} selected{% endif %}
+            >
+              {{ language.endonym_name | capitalize }}
+            </option>
+          {%- endfor -%}
+        </select>
+        {% render 'icon', icon: 'chevron-down', size: 16, class: 'localization__icon' %}
+      </div>
+    {%- endform -%}
+  </div>
+{%- endif -%}

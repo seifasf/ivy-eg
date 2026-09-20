@@ -1,0 +1,108 @@
+{% comment %}
+  Collection facets form wrapper.
+  Accepts:
+  - results: {Object} collection or search
+  - enable_sorting: {Boolean}
+  - filter_style: {String}
+{% endcomment %}
+{%- liquid
+  assign facet_results = results
+  assign sort_enabled = enable_sorting | default: true
+  assign filters = facet_results.filters
+-%}
+
+<form class="facets" data-facets-form action="{{ facet_results.url }}" method="get">
+  {%- if facet_results.terms -%}
+    <input type="hidden" name="q" value="{{ facet_results.terms | escape }}">
+    <input type="hidden" name="options[prefix]" value="last">
+  {%- endif -%}
+
+  <div class="facets__toolbar">
+    <button
+      type="button"
+      class="btn btn--secondary facets__toggle"
+      data-facets-drawer-toggle
+      aria-expanded="false"
+      aria-controls="FacetsDrawer"
+    >
+      {% render 'icon', icon: 'filter', size: 18 %}
+      {{ 'collections.filters.filter_and_sort' | t }}
+    </button>
+
+    {%- if sort_enabled and facet_results.sort_by -%}
+      <div class="facets__sort">
+        <label class="facets__sort-label" for="SortBy">{{ 'collections.sorting.title' | t }}</label>
+        <select name="sort_by" id="SortBy" class="facets__sort-select">
+          {%- for option in facet_results.sort_options -%}
+            <option value="{{ option.value }}" {% if option.value == facet_results.sort_by %}selected{% endif %}>
+              {{ option.name | escape }}
+            </option>
+          {%- endfor -%}
+        </select>
+      </div>
+    {%- endif -%}
+
+    <div class="facets__view-toggle" role="group" aria-label="{{ 'collections.view.grid' | t }}">
+      <button type="button" class="facets__view-btn" data-view-toggle="grid" aria-pressed="true" aria-label="{{ 'collections.view.grid' | t }}">
+        {% render 'icon', icon: 'grid', size: 18 %}
+      </button>
+      <button type="button" class="facets__view-btn" data-view-toggle="list" aria-pressed="false" aria-label="{{ 'collections.view.list' | t }}">
+        {% render 'icon', icon: 'list', size: 18 %}
+      </button>
+    </div>
+  </div>
+
+  <div class="facets__overlay" data-facets-overlay aria-hidden="true"></div>
+  <aside
+    id="FacetsDrawer"
+    class="facets__drawer drawer"
+    data-facets-drawer
+    aria-hidden="true"
+    aria-labelledby="FacetsDrawerTitle"
+  >
+    <div class="drawer__header facets__drawer-header">
+      <h2 id="FacetsDrawerTitle" class="drawer__title">{{ 'collections.filters.title' | t }}</h2>
+      <button type="button" class="site-header__icon-btn" data-facets-drawer-toggle aria-label="{{ 'general.close' | t }}">
+        {% render 'icon', icon: 'close' %}
+      </button>
+    </div>
+    <div class="drawer__body facets__drawer-body">
+      {%- if filters.size > 0 -%}
+        {%- for filter in filters -%}
+          {% render 'facet-filters', filter: filter, filter_style: filter_style %}
+        {%- endfor -%}
+      {%- else -%}
+        <p class="facets__empty text-muted">{{ 'collections.filters.empty' | t }}</p>
+      {%- endif -%}
+    </div>
+    <div class="drawer__footer facets__drawer-footer">
+      <button type="button" class="btn btn--secondary" data-facets-clear>{{ 'collections.filters.clear_all' | t }}</button>
+      <button type="submit" class="btn btn--primary">{{ 'collections.filters.apply' | t }}</button>
+    </div>
+  </aside>
+
+  {%- assign active_count = 0 -%}
+  {%- for filter in filters -%}
+    {%- for value in filter.active_values -%}
+      {%- assign active_count = active_count | plus: 1 -%}
+    {%- endfor -%}
+  {%- endfor -%}
+
+  {%- if active_count > 0 -%}
+    <div class="facets__active" data-facets-active>
+      <span class="facets__active-label">{{ 'collections.filters.active' | t }}:</span>
+      <ul class="facets__active-list" role="list">
+        {%- for filter in filters -%}
+          {%- for value in filter.active_values -%}
+            <li class="facets__active-item">
+              <a href="{{ value.url_to_remove }}" class="facets__active-pill">
+                {{ filter.label | escape }}: {{ value.label | escape }}
+                {% render 'icon', icon: 'close', size: 14 %}
+              </a>
+            </li>
+          {%- endfor -%}
+        {%- endfor -%}
+      </ul>
+    </div>
+  {%- endif -%}
+</form>

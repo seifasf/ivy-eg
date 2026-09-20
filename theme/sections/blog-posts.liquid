@@ -1,0 +1,129 @@
+{% render 'section-home-assets' %}
+
+{%- assign blog = section.settings.blog -%}
+{%- assign posts_to_show = section.settings.posts_to_show -%}
+
+<section id="BlogPosts-{{ section.id }}" class="ivy-section ivy-section--surface section-padding">
+  <div class="container">
+    <header class="ivy-section__header" data-reveal>
+      {%- if section.settings.title != blank -%}
+        <h2 class="ivy-section__title">{{ section.settings.title }}</h2>
+      {%- endif -%}
+      {%- if section.settings.subtitle != blank -%}
+        <p class="ivy-section__subtitle">{{ section.settings.subtitle }}</p>
+      {%- endif -%}
+    </header>
+
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when '@app' -%}
+          <div {{ block.shopify_attributes }}>{% render block %}</div>
+      {%- endcase -%}
+    {%- endfor -%}
+
+    {%- if blog != blank and blog.articles_count > 0 -%}
+      <ul
+        class="blog-posts__grid list-unstyled"
+        role="list"
+        style="grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));"
+      >
+        {%- for article in blog.articles limit: posts_to_show -%}
+          <li data-reveal>
+            <article class="blog-posts__card">
+              <a href="{{ article.url }}" class="blog-posts__image-wrap">
+                {%- if article.image -%}
+                  {{
+                    article.image
+                    | image_url: width: 800
+                    | image_tag: class: 'blog-posts__image', loading: 'lazy', widths: '400, 600, 800', alt: article.title
+                  }}
+                {%- else -%}
+                  {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+                {%- endif -%}
+              </a>
+              <div class="blog-posts__body">
+                <time class="blog-posts__meta" datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
+                  {{ article.published_at | date: format: 'abbreviated_date' }}
+                </time>
+                <h3 class="blog-posts__title">
+                  <a href="{{ article.url }}">{{ article.title }}</a>
+                </h3>
+                {%- if section.settings.show_excerpt -%}
+                  <p class="blog-posts__excerpt">{{ article.excerpt_or_content | strip_html | truncate: 120 }}</p>
+                {%- endif -%}
+                <a href="{{ article.url }}" class="btn btn--secondary btn--pill">{{ 'sections.blog_posts.read_more' | t }}</a>
+              </div>
+            </article>
+          </li>
+        {%- endfor -%}
+      </ul>
+      {%- if section.settings.show_view_all -%}
+        <div class="rich-text__buttons mt-lg" style="display: flex; justify-content: center;">
+          <a href="{{ blog.url }}" class="btn btn--secondary btn--pill">{{ 'sections.blog_posts.view_all' | t }}</a>
+        </div>
+      {%- endif -%}
+    {%- else -%}
+      <div class="featured-collection__empty" data-reveal>
+        <p class="featured-collection__empty-title">{{ 'sections.blog_posts.empty_title' | t }}</p>
+        <p class="featured-collection__empty-text">{{ 'sections.blog_posts.empty_text' | t }}</p>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.blog_posts.name",
+  "tag": "section",
+  "class": "section-blog-posts",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "t:sections.blog_posts.settings.title.label",
+      "default": "Journal"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "t:sections.blog_posts.settings.subtitle.label"
+    },
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "t:sections.blog_posts.settings.blog.label"
+    },
+    {
+      "type": "range",
+      "id": "posts_to_show",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "label": "t:sections.blog_posts.settings.posts_to_show.label",
+      "default": 3
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpt",
+      "label": "t:sections.blog_posts.settings.show_excerpt.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "t:sections.blog_posts.settings.show_view_all.label",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.blog_posts.presets.name"
+    }
+  ]
+}
+{% endschema %}

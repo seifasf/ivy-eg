@@ -1,0 +1,72 @@
+{{ 'customer.css' | asset_url | stylesheet_tag }}
+
+<section class="customer-section">
+  <div class="customer-layout customer-layout--wide">
+    <div class="customer-header">
+      <h1 class="customer-header__title">{{ 'customer.account.title' | t }}</h1>
+      {%- liquid
+        assign welcome_name = customer.first_name
+        if welcome_name == blank
+          assign welcome_name = customer.email
+        endif
+      -%}
+      <p class="customer-header__subtitle">{{ 'customer.account.welcome' | t: name: welcome_name }}</p>
+    </div>
+
+    <nav class="account-nav" aria-label="{{ 'customer.account.navigation' | t }}">
+      <a href="{{ routes.account_url }}" class="account-nav__link is-active">{{ 'customer.account.orders' | t }}</a>
+      <a href="{{ routes.account_addresses_url }}" class="account-nav__link">{{ 'customer.account.addresses' | t }}</a>
+      <a href="{{ routes.account_logout_url }}" class="account-nav__link">{{ 'customer.account.log_out' | t }}</a>
+    </nav>
+
+    <div class="customer-card">
+      <h2 class="contact-panel__title">{{ 'customer.account.order_history' | t }}</h2>
+
+      {%- if customer.orders.size > 0 -%}
+        <table class="account-table">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'customer.orders.order_number' | t }}</th>
+              <th scope="col">{{ 'customer.orders.date' | t }}</th>
+              <th scope="col">{{ 'customer.orders.payment_status' | t }}</th>
+              <th scope="col">{{ 'customer.orders.fulfillment_status' | t }}</th>
+              <th scope="col">{{ 'customer.orders.total' | t }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {%- for order in customer.orders -%}
+              <tr>
+                <td data-label="{{ 'customer.orders.order_number' | t }}">
+                  <a href="{{ order.customer_url }}" class="customer-link">{{ order.name }}</a>
+                </td>
+                <td data-label="{{ 'customer.orders.date' | t }}">{{ order.created_at | time_tag: format: 'date' }}</td>
+                <td data-label="{{ 'customer.orders.payment_status' | t }}">{{ order.financial_status_label }}</td>
+                <td data-label="{{ 'customer.orders.fulfillment_status' | t }}">{{ order.fulfillment_status_label }}</td>
+                <td data-label="{{ 'customer.orders.total' | t }}">{{ order.total_price | money_with_currency }}</td>
+              </tr>
+            {%- endfor -%}
+          </tbody>
+        </table>
+      {%- else -%}
+        <p class="empty-state">{{ 'customer.account.no_orders' | t }}</p>
+        <p style="text-align: center; margin-block-start: var(--gap-md);">
+          <a href="{{ routes.all_products_collection_url }}" class="btn btn--primary btn--pill">{{ 'general.continue_shopping' | t }}</a>
+        </p>
+      {%- endif -%}
+    </div>
+
+    <div class="customer-card">
+      <h2 class="contact-panel__title">{{ 'customer.account.details' | t }}</h2>
+      <p class="contact-panel__text">{{ customer.default_address | format_address }}</p>
+      <a href="{{ routes.account_addresses_url }}" class="btn btn--secondary btn--pill">{{ 'customer.account.view_addresses' | t }} ({{ customer.addresses_count }})</a>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.main_account.name",
+  "tag": "section",
+  "class": "section-main-account"
+}
+{% endschema %}

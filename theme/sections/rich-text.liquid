@@ -1,0 +1,91 @@
+{% render 'section-home-assets' %}
+
+<section id="RichText-{{ section.id }}" class="ivy-section section-padding">
+  <div class="container">
+    <div class="rich-text__inner{% if section.settings.alignment == 'start' %} rich-text__inner--start{% endif %}" data-reveal>
+      {%- if section.settings.heading != blank -%}
+        <h2 class="rich-text__heading">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+      {%- if section.settings.text != blank -%}
+        <div class="rich-text__text rte">{{ section.settings.text }}</div>
+      {%- endif -%}
+      {%- if section.settings.button_label != blank or section.settings.button_label_2 != blank -%}
+        <div class="rich-text__buttons">
+          {%- if section.settings.button_label != blank -%}
+            <a href="{{ section.settings.button_link | default: '#' }}" class="btn btn--primary btn--pill">
+              {{ section.settings.button_label }}
+            </a>
+          {%- endif -%}
+          {%- if section.settings.button_label_2 != blank -%}
+            <a href="{{ section.settings.button_link_2 | default: '#' }}" class="btn btn--secondary btn--pill">
+              {{ section.settings.button_label_2 }}
+            </a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.rich_text.name",
+  "tag": "section",
+  "class": "section-rich-text",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:sections.rich_text.settings.heading.label",
+      "default": "Get In Touch"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "t:sections.rich_text.settings.text.label",
+      "default": "<p>Have questions? We're here to help you find what you need.</p>"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:sections.rich_text.settings.alignment.label",
+      "options": [
+        { "value": "center", "label": "t:sections.rich_text.settings.alignment.options.center" },
+        { "value": "start", "label": "t:sections.rich_text.settings.alignment.options.start" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:sections.rich_text.settings.button_label.label",
+      "default": "Contact Us"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "t:sections.rich_text.settings.button_link.label"
+    },
+    {
+      "type": "text",
+      "id": "button_label_2",
+      "label": "t:sections.rich_text.settings.button_label_2.label"
+    },
+    {
+      "type": "url",
+      "id": "button_link_2",
+      "label": "t:sections.rich_text.settings.button_link_2.label"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.rich_text.presets.name",
+      "settings": {
+        "heading": "Get In Touch",
+        "text": "<p>Have questions? We're here to help you find what you need.</p>",
+        "button_label": "Contact Us"
+      }
+    }
+  ]
+}
+{% endschema %}

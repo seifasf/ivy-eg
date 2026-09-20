@@ -1,0 +1,94 @@
+{% comment %}
+  Variant picker: swatches (color), buttons, or select.
+  Accepts:
+  - product: {required}
+  - block: {Object} section block settings
+  - form_id: {String}
+{% endcomment %}
+{%- unless product.has_only_default_variant -%}
+  <div class="variant-picker" data-variant-picker>
+    {%- for option in product.options_with_values -%}
+      {%- liquid
+        assign option_name_down = option.name | downcase
+        assign picker_type = block.settings.picker_type
+        if block.settings.enable_swatches
+          if option_name_down == 'color' or option_name_down == 'colour'
+            assign picker_type = 'swatch'
+          endif
+        endif
+        if picker_type == 'dropdown'
+          assign picker_type = 'select'
+        endif
+      -%}
+      <fieldset class="variant-picker__option">
+        <legend class="variant-picker__legend">
+          {{ option.name }}:
+          <span class="variant-picker__selected" data-selected-option="{{ forloop.index0 }}">{{ option.selected_value }}</span>
+        </legend>
+
+        {%- if picker_type == 'swatch' -%}
+          <div class="variant-picker__swatches" role="radiogroup" aria-label="{{ 'products.product.variant_picker.choose_option' | t: option: option.name }}">
+            {%- for value in option.values -%}
+              {%- liquid
+                assign swatch_style = ''
+                assign swatch_file = value | handle | append: '.png'
+                assign swatch_image = images[swatch_file]
+                if swatch_image != blank
+                  assign swatch_style = 'background-image: url(' | append: swatch_image | image_url: width: 80 | append: ');'
+                else
+                  assign swatch_style = 'background-color: ' | append: value | handle | replace: '-', ''
+                endif
+              -%}
+              <label class="variant-picker__swatch">
+                <input
+                  type="radio"
+                  name="options[{{ option.name | escape }}]"
+                  value="{{ value | escape }}"
+                  data-option-index="{{ forloop.parentloop.index0 }}"
+                  {% if option.selected_value == value %}checked{% endif %}
+                  class="variant-picker__input visually-hidden"
+                >
+                <span class="variant-picker__swatch-dot" style="{{ swatch_style }}" title="{{ value | escape }}">
+                  <span class="visually-hidden">{{ value }}</span>
+                </span>
+              </label>
+            {%- endfor -%}
+          </div>
+        {%- elsif picker_type == 'button' or picker_type == blank -%}
+          <div class="variant-picker__buttons" role="radiogroup" aria-label="{{ 'products.product.variant_picker.choose_option' | t: option: option.name }}">
+            {%- for value in option.values -%}
+              <label class="variant-picker__button">
+                <input
+                  type="radio"
+                  name="options[{{ option.name | escape }}]"
+                  value="{{ value | escape }}"
+                  data-option-index="{{ forloop.parentloop.index0 }}"
+                  {% if option.selected_value == value %}checked{% endif %}
+                  class="variant-picker__input visually-hidden"
+                >
+                <span class="variant-picker__button-label">{{ value }}</span>
+              </label>
+            {%- endfor -%}
+          </div>
+        {%- else -%}
+          <select
+            class="variant-picker__select"
+            name="options[{{ option.name | escape }}]"
+            data-option-index="{{ forloop.index0 }}"
+            aria-label="{{ 'products.product.variant_picker.choose_option' | t: option: option.name }}"
+          >
+            {%- for value in option.values -%}
+              <option value="{{ value | escape }}" {% if option.selected_value == value %}selected{% endif %}>
+                {{ value }}
+              </option>
+            {%- endfor -%}
+          </select>
+        {%- endif -%}
+      </fieldset>
+    {%- endfor -%}
+
+    <script type="application/json" data-product-json>
+      {{ product | json }}
+    </script>
+  </div>
+{%- endunless -%}

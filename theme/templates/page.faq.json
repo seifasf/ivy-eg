@@ -1,0 +1,38 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-faq",
+      "blocks": {
+        "q1": {
+          "type": "question",
+          "settings": {
+            "question": "What is your shipping policy?",
+            "answer": "<p>We ship across Egypt. Delivery times vary by city; you'll see estimates at checkout.</p>"
+          }
+        },
+        "q2": {
+          "type": "question",
+          "settings": {
+            "question": "How do returns work?",
+            "answer": "<p>Unused items in original packaging may be returned within 14 days. Contact us to start a return.</p>"
+          }
+        },
+        "q3": {
+          "type": "question",
+          "settings": {
+            "question": "How can I track my order?",
+            "answer": "<p>You'll receive tracking by email once your order ships. You can also view orders in your account.</p>"
+          }
+        }
+      },
+      "block_order": ["q1", "q2", "q3"],
+      "settings": {
+        "heading": "FAQ",
+        "subheading": "Answers to common questions about IVY.",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    }
+  },
+  "order": ["main"]
+}

@@ -1,0 +1,105 @@
+{% render 'section-home-assets' %}
+
+{%- liquid
+  assign collection = section.settings.collection
+  assign columns = section.settings.columns_desktop | at_most: 4 | at_least: 2
+  assign products_to_show = section.settings.products_to_show
+-%}
+
+<section id="FeaturedCollection-{{ section.id }}" class="ivy-section ivy-section--surface section-padding">
+  <div class="container">
+    <header class="ivy-section__header" data-reveal>
+      {%- if section.settings.title != blank -%}
+        <h2 class="ivy-section__title">{{ section.settings.title }}</h2>
+      {%- endif -%}
+      {%- if section.settings.subtitle != blank -%}
+        <p class="ivy-section__subtitle">{{ section.settings.subtitle }}</p>
+      {%- endif -%}
+    </header>
+
+    {%- if collection != blank and collection.products_count > 0 -%}
+      <ul
+        class="featured-collection__grid featured-collection__grid--{{ columns }} list-unstyled"
+        role="list"
+      >
+        {%- for product in collection.products limit: products_to_show -%}
+          <li data-reveal>
+            {% render 'product-card', product: product, lazy_load: true %}
+          </li>
+        {%- endfor -%}
+      </ul>
+      {%- if section.settings.show_view_all and collection.url != blank -%}
+        <div class="rich-text__buttons mt-lg" style="justify-content: center; display: flex;">
+          <a href="{{ collection.url }}" class="btn btn--secondary btn--pill">
+            {{ 'sections.featured_collection.view_all' | t }}
+          </a>
+        </div>
+      {%- endif -%}
+    {%- else -%}
+      <div class="featured-collection__empty" data-reveal>
+        <p class="featured-collection__empty-title">{{ 'sections.featured_collection.empty_title' | t }}</p>
+        <p class="featured-collection__empty-text">{{ 'sections.featured_collection.empty_text' | t }}</p>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.featured_collection.name",
+  "tag": "section",
+  "class": "section-featured-collection",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "t:sections.featured_collection.settings.title.label",
+      "default": "Featured Products"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "t:sections.featured_collection.settings.subtitle.label",
+      "default": "Handpicked selections for the discerning individual"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "t:sections.featured_collection.settings.collection.label"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "label": "t:sections.featured_collection.settings.products_to_show.label",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "t:sections.featured_collection.settings.columns_desktop.label",
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "t:sections.featured_collection.settings.show_view_all.label",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.featured_collection.presets.name",
+      "settings": {
+        "title": "Featured Products",
+        "subtitle": "Handpicked selections for the discerning individual"
+      }
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,63 @@
+{% comment %}
+  Breadcrumbs navigation.
+  Accepts:
+  - class: {String}
+{% endcomment %}
+{%- unless template.name == 'index' or template.name == 'cart' or template.name == '404' -%}
+  <nav class="breadcrumbs {{ class }}" aria-label="{{ 'breadcrumbs.label' | t }}">
+    <ol class="breadcrumbs__list" itemscope itemtype="https://schema.org/BreadcrumbList">
+      <li class="breadcrumbs__item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a class="breadcrumbs__link" href="{{ routes.root_url }}" itemprop="item">
+          <span itemprop="name">{{ 'breadcrumbs.home' | t }}</span>
+        </a>
+        <meta itemprop="position" content="1">
+      </li>
+
+      {%- if template.name == 'product' and product -%}
+        {%- if collection -%}
+          <li class="breadcrumbs__item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+            <a class="breadcrumbs__link" href="{{ collection.url }}" itemprop="item">
+              <span itemprop="name">{{ collection.title | escape }}</span>
+            </a>
+            <meta itemprop="position" content="2">
+          </li>
+        {%- endif -%}
+        <li class="breadcrumbs__item breadcrumbs__item--current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <span itemprop="name">{{ product.title | escape }}</span>
+          <meta itemprop="position" content="{% if collection %}3{% else %}2{% endif %}">
+        </li>
+      {%- elsif template.name == 'collection' and collection -%}
+        <li class="breadcrumbs__item breadcrumbs__item--current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <span itemprop="name">{{ collection.title | escape }}</span>
+          <meta itemprop="position" content="2">
+        </li>
+      {%- elsif template.name == 'blog' and blog -%}
+        <li class="breadcrumbs__item breadcrumbs__item--current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <span itemprop="name">{{ blog.title | escape }}</span>
+          <meta itemprop="position" content="2">
+        </li>
+      {%- elsif template.name == 'article' and article -%}
+        <li class="breadcrumbs__item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a class="breadcrumbs__link" href="{{ blog.url }}" itemprop="item">
+            <span itemprop="name">{{ blog.title | escape }}</span>
+          </a>
+          <meta itemprop="position" content="2">
+        </li>
+        <li class="breadcrumbs__item breadcrumbs__item--current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <span itemprop="name">{{ article.title | escape }}</span>
+          <meta itemprop="position" content="3">
+        </li>
+      {%- elsif template.name == 'page' and page -%}
+        <li class="breadcrumbs__item breadcrumbs__item--current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <span itemprop="name">{{ page.title | escape }}</span>
+          <meta itemprop="position" content="2">
+        </li>
+      {%- elsif template.name == 'search' -%}
+        <li class="breadcrumbs__item breadcrumbs__item--current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <span itemprop="name">{{ 'search.title' | t }}</span>
+          <meta itemprop="position" content="2">
+        </li>
+      {%- endif -%}
+    </ol>
+  </nav>
+{%- endunless -%}

@@ -1,0 +1,69 @@
+{% comment %}
+  Renders active collection filters (Storefront Filtering).
+  Accepts:
+  - filter: {Object} (required)
+  - filter_style: {String} list | swatch | price_range
+{% endcomment %}
+{%- liquid
+  assign style = filter_style | default: 'list'
+-%}
+<div class="facets__group" data-facet-group>
+  <h3 class="facets__heading">{{ filter.label | escape }}</h3>
+
+  {%- case filter.type -%}
+    {%- when 'list', 'boolean' -%}
+      <ul class="facets__list" role="list">
+        {%- for value in filter.values -%}
+          <li class="facets__item">
+            <label class="facets__label{% if value.active %} facets__label--active{% endif %}">
+              <input
+                type="checkbox"
+                name="{{ value.param_name }}"
+                value="{{ value.value }}"
+                {% if value.active %}checked{% endif %}
+                {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                class="facets__checkbox"
+              >
+              {%- if style == 'swatch' and filter.presentation == 'swatch' -%}
+                <span class="facets__swatch" style="--swatch: {{ value.swatch.color }};"></span>
+              {%- endif -%}
+              <span class="facets__text">{{ value.label | escape }}</span>
+              <span class="facets__count">({{ value.count }})</span>
+            </label>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- when 'price_range' -%}
+      <div class="facets__price-range">
+        <div class="facets__price-fields">
+          <label class="facets__price-field">
+            <span class="visually-hidden">{{ 'collections.filters.from' | t }}</span>
+            <span class="facets__price-prefix">{{ cart.currency.symbol }}</span>
+            <input
+              type="number"
+              name="{{ filter.min_value.param_name }}"
+              {% if filter.min_value.value %}value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
+              placeholder="0"
+              min="0"
+              max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+              class="facets__price-input"
+            >
+          </label>
+          <span class="facets__price-separator" aria-hidden="true">–</span>
+          <label class="facets__price-field">
+            <span class="visually-hidden">{{ 'collections.filters.to' | t }}</span>
+            <span class="facets__price-prefix">{{ cart.currency.symbol }}</span>
+            <input
+              type="number"
+              name="{{ filter.max_value.param_name }}"
+              {% if filter.max_value.value %}value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
+              placeholder="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+              min="0"
+              max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+              class="facets__price-input"
+            >
+          </label>
+        </div>
+      </div>
+  {%- endcase -%}
+</div>

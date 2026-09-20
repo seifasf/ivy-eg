@@ -1,0 +1,56 @@
+{{ 'section-collection.css' | asset_url | stylesheet_tag }}
+
+<section class="collection-banner section-padding" id="CollectionBanner-{{ section.id }}">
+  <div class="container">
+    {% render 'breadcrumbs', class: 'collection-banner__breadcrumbs' %}
+
+    <div class="collection-banner__content{% if section.settings.show_image and collection.image %} collection-banner__content--with-image{% endif %}">
+      {%- if section.settings.show_image and collection.image -%}
+        <div class="collection-banner__media">
+          {{
+            collection.image
+            | image_url: width: 1600
+            | image_tag:
+              class: 'collection-banner__image',
+              loading: 'eager',
+              sizes: '100vw',
+              widths: '400, 800, 1200, 1600',
+              alt: collection.title | escape
+          }}
+        </div>
+      {%- endif -%}
+
+      <div class="collection-banner__text">
+        <h1 class="collection-banner__title">{{ collection.title | escape }}</h1>
+        {%- if section.settings.show_description and collection.description != blank -%}
+          <div class="collection-banner__description rte">{{ collection.description }}</div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collection banner",
+  "tag": "section",
+  "class": "section-collection-banner",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Show collection image",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show collection description",
+      "default": true
+    }
+  ],
+  "enabled_on": {
+    "templates": ["collection"]
+  }
+}
+{% endschema %}

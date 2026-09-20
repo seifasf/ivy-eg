@@ -1,0 +1,140 @@
+{% render 'section-home-assets' %}
+
+{%- liquid
+  assign use_all = section.settings.show_all_collections
+  assign columns = section.settings.columns_desktop
+-%}
+
+<section id="CollectionList-{{ section.id }}" class="ivy-section section-padding">
+  <div class="container">
+    <header class="ivy-section__header" data-reveal>
+      {%- if section.settings.title != blank -%}
+        <h2 class="ivy-section__title">{{ section.settings.title }}</h2>
+      {%- endif -%}
+      {%- if section.settings.subtitle != blank -%}
+        <p class="ivy-section__subtitle">{{ section.settings.subtitle }}</p>
+      {%- endif -%}
+    </header>
+
+    <ul
+      class="collection-list__grid list-unstyled"
+      role="list"
+      style="grid-template-columns: repeat(auto-fill, minmax(min(100%, {{ 100 | divided_by: columns }}%), 1fr));"
+    >
+      {%- if use_all -%}
+        {%- for collection in collections -%}
+          {%- unless collection.handle == 'frontpage' -%}
+            <li data-reveal>
+              <a href="{{ collection.url }}" class="collection-list__card">
+                {%- if collection.featured_image -%}
+                  {{
+                    collection.featured_image
+                    | image_url: width: 600
+                    | image_tag: class: 'collection-list__image', loading: 'lazy', widths: '300, 600', alt: collection.title
+                  }}
+                {%- else -%}
+                  <div class="collection-list__placeholder">{{ collection.title }}</div>
+                {%- endif -%}
+                <span class="collection-list__title">{{ collection.title }}</span>
+              </a>
+            </li>
+          {%- endunless -%}
+        {%- endfor -%}
+      {%- elsif section.blocks.size > 0 -%}
+        {%- for block in section.blocks -%}
+          {%- assign coll = block.settings.collection -%}
+          <li {{ block.shopify_attributes }} data-reveal>
+            <a href="{{ coll.url | default: routes.all_products_collection_url }}" class="collection-list__card">
+              {%- if block.settings.image != blank -%}
+                {{
+                  block.settings.image
+                  | image_url: width: 600
+                  | image_tag: class: 'collection-list__image', loading: 'lazy', alt: block.settings.title
+                }}
+              {%- elsif coll.featured_image -%}
+                {{
+                  coll.featured_image
+                  | image_url: width: 600
+                  | image_tag: class: 'collection-list__image', loading: 'lazy', alt: coll.title
+                }}
+              {%- else -%}
+                <div class="collection-list__placeholder">{{ block.settings.title | default: coll.title | default: 'Collection' }}</div>
+              {%- endif -%}
+              <span class="collection-list__title">{{ block.settings.title | default: coll.title | default: 'Collection' }}</span>
+            </a>
+          </li>
+        {%- endfor -%}
+      {%- else -%}
+        <li data-reveal>
+          <div class="collection-list__card">
+            <div class="collection-list__placeholder">{{ 'sections.collection_list.empty' | t }}</div>
+          </div>
+        </li>
+      {%- endif -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.collection_list.name",
+  "tag": "section",
+  "class": "section-collection-list",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "t:sections.collection_list.settings.title.label",
+      "default": "Collections"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "t:sections.collection_list.settings.subtitle.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_all_collections",
+      "label": "t:sections.collection_list.settings.show_all_collections.label",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "t:sections.collection_list.settings.columns_desktop.label",
+      "default": 3
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "t:sections.collection_list.blocks.collection.name",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "t:sections.collection_list.blocks.collection.settings.collection.label"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:sections.collection_list.blocks.collection.settings.image.label"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "t:sections.collection_list.blocks.collection.settings.title.label"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.collection_list.presets.name"
+    }
+  ]
+}
+{% endschema %}

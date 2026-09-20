@@ -1,0 +1,63 @@
+{% comment %}
+  Product media thumbnail.
+  Accepts:
+  - media: {Object} (required)
+  - product: {Object} (required)
+  - index: {Number}
+  - selected: {Boolean}
+{% endcomment %}
+{%- liquid
+  assign thumb_index = index | default: 1
+  assign is_selected = selected | default: false
+-%}
+<button
+  type="button"
+  class="product-media-gallery__thumb{% if is_selected %} product-media-gallery__thumb--active{% endif %}"
+  data-media-thumb
+  data-media-id="{{ media.id }}"
+  data-media-index="{{ thumb_index | minus: 1 }}"
+  aria-current="{% if is_selected %}true{% else %}false{% endif %}"
+  aria-label="
+    {%- if media.media_type == 'video' or media.media_type == 'external_video' -%}
+      {{ 'products.product.media.load_video' | t: index: thumb_index }}
+    {%- else -%}
+      {{ 'products.product.media.load_image' | t: index: thumb_index }}
+    {%- endif -%}
+  "
+>
+  {%- if media.media_type == 'video' or media.media_type == 'external_video' -%}
+    {{
+      media.preview_image
+      | image_url: width: 120
+      | image_tag:
+        class: 'product-media-gallery__thumb-image',
+        loading: 'lazy',
+        widths: '60, 80, 120',
+        alt: media.alt | default: product.title | escape
+    }}
+    <span class="product-media-gallery__thumb-badge" aria-hidden="true">
+      {% render 'icon', icon: 'play', size: 16 %}
+    </span>
+  {%- elsif media.media_type == 'model' -%}
+    {{
+      media.preview_image
+      | image_url: width: 120
+      | image_tag:
+        class: 'product-media-gallery__thumb-image',
+        loading: 'lazy',
+        widths: '60, 80, 120',
+        alt: media.alt | default: product.title | escape
+    }}
+    <span class="product-media-gallery__thumb-badge" aria-hidden="true">3D</span>
+  {%- else -%}
+    {{
+      media
+      | image_url: width: 120
+      | image_tag:
+        class: 'product-media-gallery__thumb-image',
+        loading: 'lazy',
+        widths: '60, 80, 120',
+        alt: media.alt | default: product.title | escape
+    }}
+  {%- endif -%}
+</button>

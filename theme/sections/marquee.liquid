@@ -1,0 +1,77 @@
+{% render 'section-home-assets' %}
+
+<section
+  id="Marquee-{{ section.id }}"
+  class="marquee ivy-section"
+  data-marquee
+  data-pause-on-hover="{{ section.settings.pause_on_hover }}"
+  style="--marquee-duration: {{ section.settings.speed }}s;"
+  aria-label="{% if section.settings.accessibility_label != blank %}{{ section.settings.accessibility_label }}{% else %}{{ 'sections.marquee.accessibility.label' | t }}{% endif %}"
+>
+  <div class="marquee__track" data-marquee-track>
+    {%- if section.blocks.size > 0 -%}
+      {%- for block in section.blocks -%}
+        <span class="marquee__item" {{ block.shopify_attributes }}>{{ block.settings.text }}</span>
+      {%- endfor -%}
+    {%- else -%}
+      <span class="marquee__item">{{ 'general.tagline' | t }}</span>
+      <span class="marquee__item">IVY</span>
+      <span class="marquee__item">{{ 'sections.marquee.defaults.shipping' | t }}</span>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.marquee.name",
+  "tag": "section",
+  "class": "section-marquee",
+  "settings": [
+    {
+      "type": "range",
+      "id": "speed",
+      "min": 15,
+      "max": 60,
+      "step": 5,
+      "unit": "s",
+      "label": "t:sections.marquee.settings.speed.label",
+      "default": 30
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "t:sections.marquee.settings.pause_on_hover.label",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "accessibility_label",
+      "label": "t:sections.marquee.settings.accessibility_label.label"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "text",
+      "name": "t:sections.marquee.blocks.text.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "t:sections.marquee.blocks.text.settings.text.label",
+          "default": "Your Everyday Wingman"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.marquee.presets.name",
+      "blocks": [
+        { "type": "text", "settings": { "text": "Your Everyday Wingman" } },
+        { "type": "text", "settings": { "text": "Free shipping on qualifying orders" } },
+        { "type": "text", "settings": { "text": "@ivywear.eg" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

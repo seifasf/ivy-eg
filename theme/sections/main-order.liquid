@@ -1,0 +1,94 @@
+{{ 'customer.css' | asset_url | stylesheet_tag }}
+
+<section class="customer-section">
+  <div class="customer-layout customer-layout--wide">
+    <div class="customer-header">
+      <h1 class="customer-header__title">{{ 'customer.order.title' | t: name: order.name }}</h1>
+      <p class="customer-header__subtitle">
+        <a href="{{ routes.account_url }}" class="customer-link">← {{ 'customer.order.back_to_account' | t }}</a>
+      </p>
+    </div>
+
+    <div class="order-summary">
+      <div class="order-summary__item">
+        <p class="order-summary__label">{{ 'customer.order.date' | t }}</p>
+        <p>{{ order.created_at | time_tag: format: 'date_at_time' }}</p>
+      </div>
+      <div class="order-summary__item">
+        <p class="order-summary__label">{{ 'customer.order.payment_status' | t }}</p>
+        <p>{{ order.financial_status_label }}</p>
+      </div>
+      <div class="order-summary__item">
+        <p class="order-summary__label">{{ 'customer.order.fulfillment_status' | t }}</p>
+        <p>{{ order.fulfillment_status_label }}</p>
+      </div>
+    </div>
+
+    <div class="customer-card">
+      <h2 class="contact-panel__title">{{ 'customer.order.items' | t }}</h2>
+
+      {%- for line_item in order.line_items -%}
+        <div class="order-line">
+          {%- if line_item.image -%}
+            {{ line_item.image | image_url: width: 120 | image_tag: class: 'order-line__image', loading: 'lazy', alt: line_item.title }}
+          {%- endif -%}
+          <div class="order-line__details">
+            <p class="order-line__title">{{ line_item.title | escape }}</p>
+            <p class="order-line__meta">
+              {{ 'customer.order.quantity' | t: quantity: line_item.quantity }}
+              · {{ line_item.final_line_price | money }}
+            </p>
+            {%- unless line_item.sku == blank -%}
+              <p class="order-line__meta">SKU: {{ line_item.sku }}</p>
+            {%- endunless -%}
+          </div>
+        </div>
+      {%- endfor -%}
+
+      <div class="order-totals">
+        <div class="order-totals__row">
+          <span>{{ 'customer.order.subtotal' | t }}</span>
+          <span>{{ order.line_items_subtotal_price | money }}</span>
+        </div>
+        {%- for discount in order.discounts -%}
+          <div class="order-totals__row">
+            <span>{{ 'customer.order.discount' | t }} ({{ discount.code }})</span>
+            <span>-{{ discount.savings | money }}</span>
+          </div>
+        {%- endfor -%}
+        {%- for shipping_method in order.shipping_methods -%}
+          <div class="order-totals__row">
+            <span>{{ 'customer.order.shipping' | t }} ({{ shipping_method.title }})</span>
+            <span>{{ shipping_method.price | money }}</span>
+          </div>
+        {%- endfor -%}
+        <div class="order-totals__row">
+          <span>{{ 'customer.order.tax' | t }}</span>
+          <span>{{ order.tax_price | money }}</span>
+        </div>
+        <div class="order-totals__row order-totals__row--total">
+          <span>{{ 'customer.order.total' | t }}</span>
+          <span>{{ order.total_price | money_with_currency }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="customer-card">
+      <h2 class="contact-panel__title">{{ 'customer.order.billing_address' | t }}</h2>
+      <p class="contact-panel__text">{{ order.billing_address | format_address }}</p>
+    </div>
+
+    <div class="customer-card">
+      <h2 class="contact-panel__title">{{ 'customer.order.shipping_address' | t }}</h2>
+      <p class="contact-panel__text">{{ order.shipping_address | format_address }}</p>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.main_order.name",
+  "tag": "section",
+  "class": "section-main-order"
+}
+{% endschema %}

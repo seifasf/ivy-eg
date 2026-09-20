@@ -1,0 +1,85 @@
+{% comment %}
+  Social icon links from theme settings.
+  Accepts:
+  - class: {String}
+{% endcomment %}
+<ul class="social-icons {{ class }}" role="list">
+  {%- if settings.social_instagram != blank -%}
+    <li class="social-icons__item">
+      <a
+        href="{{ settings.social_instagram }}"
+        class="social-icons__link"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="{{ 'social.follow_on' | t: social: 'Instagram' }}"
+      >
+        {% render 'icon', icon: 'instagram' %}
+      </a>
+    </li>
+  {%- endif -%}
+  {%- if settings.social_tiktok != blank -%}
+    <li class="social-icons__item">
+      <a
+        href="{{ settings.social_tiktok }}"
+        class="social-icons__link"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="{{ 'social.follow_on' | t: social: 'TikTok' }}"
+      >
+        {% render 'icon', icon: 'tiktok' %}
+      </a>
+    </li>
+  {%- endif -%}
+  {%- if settings.social_facebook != blank -%}
+    <li class="social-icons__item">
+      <a
+        href="{{ settings.social_facebook }}"
+        class="social-icons__link"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="{{ 'social.follow_on' | t: social: 'Facebook' }}"
+      >
+        {% render 'icon', icon: 'facebook' %}
+      </a>
+    </li>
+  {%- endif -%}
+  {%- if settings.social_twitter != blank -%}
+    <li class="social-icons__item">
+      <a
+        href="{{ settings.social_twitter }}"
+        class="social-icons__link"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="{{ 'social.follow_on' | t: social: 'X' }}"
+      >
+        {% render 'icon', icon: 'twitter' %}
+      </a>
+    </li>
+  {%- endif -%}
+  {%- if settings.social_youtube != blank -%}
+    <li class="social-icons__item">
+      <a
+        href="{{ settings.social_youtube }}"
+        class="social-icons__link"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="{{ 'social.follow_on' | t: social: 'YouTube' }}"
+      >
+        {% render 'icon', icon: 'youtube' %}
+      </a>
+    </li>
+  {%- endif -%}
+  {%- if settings.social_linktree != blank -%}
+    <li class="social-icons__item">
+      <a
+        href="{{ settings.social_linktree }}"
+        class="social-icons__link"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="{{ 'social.follow_on' | t: social: 'Linktree' }}"
+      >
+        {% render 'icon', icon: 'link' %}
+      </a>
+    </li>
+  {%- endif -%}
+</ul>

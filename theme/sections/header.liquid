@@ -1,0 +1,263 @@
+{%- liquid
+  assign menu = section.settings.menu
+  if menu == blank
+    assign menu = linklists.main-menu
+  endif
+-%}
+
+<header class="site-header" data-site-header>
+  <div class="site-header__inner container container--wide">
+    <div class="site-header__menu-toggle">
+      <button type="button" class="site-header__icon-btn" data-menu-open aria-expanded="false" aria-controls="MenuDrawer">
+        {% render 'icon', icon: 'menu' %}
+        <span class="visually-hidden">{{ 'header.menu' | t }}</span>
+      </button>
+    </div>
+
+    <nav class="site-header__nav site-header__nav--start" aria-label="{{ 'header.menu' | t }}">
+      <ul class="site-header__nav-list" role="list">
+        {%- if menu.links.size > 0 -%}
+          {%- for link in menu.links -%}
+            <li class="site-header__nav-item{% if link.links != blank %} site-header__nav-item--has-dropdown{% endif %}">
+              <a class="site-header__nav-link" href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>
+                {{ link.title | escape }}
+              </a>
+              {%- if link.links != blank -%}
+                <div class="site-header__dropdown">
+                  <ul class="site-header__dropdown-list" role="list">
+                    {%- for child_link in link.links -%}
+                      <li>
+                        <a class="site-header__dropdown-link" href="{{ child_link.url }}">{{ child_link.title | escape }}</a>
+                        {%- if child_link.links != blank -%}
+                          <ul class="site-header__dropdown-sublist" role="list">
+                            {%- for grandchild in child_link.links -%}
+                              <li>
+                                <a class="site-header__dropdown-sublink" href="{{ grandchild.url }}">{{ grandchild.title | escape }}</a>
+                              </li>
+                            {%- endfor -%}
+                          </ul>
+                        {%- endif -%}
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                  {%- for block in section.blocks -%}
+                    {%- if block.type == 'mega_promo' and block.settings.parent_link_title == link.title -%}
+                      <div class="site-header__mega-promo" {{ block.shopify_attributes }}>
+                        {%- if block.settings.image != blank -%}
+                          <a href="{{ block.settings.link | default: link.url }}">
+                            {{
+                              block.settings.image
+                              | image_url: width: 400
+                              | image_tag: loading: 'lazy', alt: block.settings.heading
+                            }}
+                          </a>
+                        {%- endif -%}
+                        {%- if block.settings.heading != blank -%}
+                          <p class="site-header__mega-promo-title">{{ block.settings.heading | escape }}</p>
+                        {%- endif -%}
+                      </div>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </div>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        {%- else -%}
+          <li>
+            <a class="site-header__nav-link" href="{{ routes.root_url }}">{{ 'general.home' | t }}</a>
+          </li>
+          <li>
+            <a class="site-header__nav-link" href="{{ routes.all_products_collection_url }}">{{ 'header.products' | t }}</a>
+          </li>
+        {%- endif -%}
+      </ul>
+    </nav>
+
+    <a href="{{ routes.root_url }}" class="site-header__logo-link">
+      {%- if settings.logo != blank -%}
+        {{
+          settings.logo
+          | image_url: width: 400
+          | image_tag: class: 'site-header__logo', widths: '140, 280, 400', alt: shop.name, loading: 'eager'
+        }}
+      {%- else -%}
+        <span class="site-header__wordmark">{{ shop.name }}</span>
+      {%- endif -%}
+    </a>
+
+    <div class="site-header__actions">
+      {%- if settings.predictive_search_enabled -%}
+        <div class="site-header__search predictive-search" data-predictive-search>
+          <form action="{{ routes.search_url }}" method="get" role="search" class="predictive-search__form">
+            <div class="predictive-search__input-wrapper">
+              <label class="visually-hidden" for="HeaderSearch">{{ 'search.placeholder' | t }}</label>
+              <input
+                id="HeaderSearch"
+                class="predictive-search__input"
+                type="search"
+                name="q"
+                value="{{ search.terms | escape }}"
+                placeholder="{{ 'search.placeholder' | t }}"
+                data-predictive-search-input
+                autocomplete="off"
+                aria-expanded="false"
+                aria-controls="PredictiveSearchResults"
+              >
+              <button type="submit" class="predictive-search__submit" aria-label="{{ 'general.search' | t }}">
+                {% render 'icon', icon: 'search', size: 20 %}
+              </button>
+            </div>
+            <div
+              id="PredictiveSearchResults"
+              class="predictive-search__results"
+              data-predictive-search-results
+              hidden
+              data-empty-text="{{ 'search.no_results' | t: terms: '…' }}"
+              data-products-title="{{ 'search.predictive.products' | t }}"
+              data-view-all="{{ 'search.predictive.view_all' | t }}"
+            ></div>
+          </form>
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.show_account_link -%}
+        <a href="{{ routes.account_url }}" class="site-header__icon-btn" aria-label="{{ 'general.account' | t }}">
+          {% render 'icon', icon: 'account' %}
+        </a>
+      {%- endif -%}
+
+      <button type="button" class="site-header__icon-btn site-header__cart-btn" data-cart-open aria-label="{{ 'cart.drawer.open' | t }}">
+        {% render 'icon', icon: 'cart' %}
+        <span class="badge badge--count site-header__cart-count" data-cart-count {% if cart.item_count == 0 %}hidden{% endif %}>
+          {{ cart.item_count }}
+        </span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="overlay menu-drawer__overlay" data-menu-overlay aria-hidden="true"></div>
+<aside id="MenuDrawer" class="menu-drawer" data-menu-drawer aria-hidden="true" aria-label="{{ 'header.menu' | t }}">
+  <div class="menu-drawer__header">
+    <span class="drawer__title">{{ 'header.menu' | t }}</span>
+    <button type="button" class="site-header__icon-btn" data-menu-close aria-label="{{ 'general.close' | t }}">
+      {% render 'icon', icon: 'close' %}
+    </button>
+  </div>
+  <ul class="menu-drawer__list" role="list">
+    {%- if menu.links.size > 0 -%}
+      {%- for link in menu.links -%}
+        <li class="menu-drawer__item{% if link.links != blank %} menu-drawer__item--nested{% endif %}">
+          <a class="menu-drawer__link" href="{{ link.url }}">
+            <span class="menu-drawer__index">{{ forloop.index | prepend: '00' | slice: -2, 2 }}</span>
+            {{ link.title | escape }}
+          </a>
+          {%- if link.links != blank -%}
+            <ul class="menu-drawer__sublist" role="list">
+              {%- for child_link in link.links -%}
+                <li>
+                  <a class="menu-drawer__sublink" href="{{ child_link.url }}">{{ child_link.title | escape }}</a>
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    {%- else -%}
+      <li>
+        <a class="menu-drawer__link" href="{{ routes.root_url }}">
+          <span class="menu-drawer__index">01</span>
+          {{ 'general.home' | t }}
+        </a>
+      </li>
+      <li>
+        <a class="menu-drawer__link" href="{{ routes.all_products_collection_url }}">
+          <span class="menu-drawer__index">02</span>
+          {{ 'header.products' | t }}
+        </a>
+      </li>
+      <li>
+        <a class="menu-drawer__link" href="{{ pages.contact.url | default: '/pages/contact' }}">
+          <span class="menu-drawer__index">03</span>
+          {{ 'header.contact' | t }}
+        </a>
+      </li>
+    {%- endif -%}
+  </ul>
+
+  {%- if section.settings.show_localization_in_drawer -%}
+    <div class="menu-drawer__localization">
+      {% render 'country-localization' %}
+      {% render 'language-localization' %}
+    </div>
+  {%- endif -%}
+
+  {%- if section.settings.show_account_in_drawer -%}
+    <div class="menu-drawer__account">
+      <a href="{{ routes.account_url }}" class="btn btn--secondary btn--pill" style="inline-size: 100%;">
+        {{ 'general.account' | t }}
+      </a>
+    </div>
+  {%- endif -%}
+</aside>
+
+{% schema %}
+{
+  "name": "t:sections.header.name",
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "t:sections.header.settings.menu.label",
+      "default": "main-menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_account_link",
+      "label": "t:sections.header.settings.show_account_link.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_account_in_drawer",
+      "label": "t:sections.header.settings.show_account_in_drawer.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_localization_in_drawer",
+      "label": "t:sections.header.settings.show_localization_in_drawer.label",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "mega_promo",
+      "name": "t:sections.header.blocks.mega_promo.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "parent_link_title",
+          "label": "t:sections.header.blocks.mega_promo.settings.parent_link_title.label",
+          "info": "t:sections.header.blocks.mega_promo.settings.parent_link_title.info"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:sections.header.blocks.mega_promo.settings.image.label"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:sections.header.blocks.mega_promo.settings.heading.label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:sections.header.blocks.mega_promo.settings.link.label"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

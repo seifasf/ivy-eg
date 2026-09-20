@@ -1,0 +1,93 @@
+{{ 'section-product.css' | asset_url | stylesheet_tag }}
+
+<section class="product-upsell section-padding" id="Upsell-{{ section.id }}">
+  <div class="container">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="section-title">{{ section.settings.heading | escape }}</h2>
+    {%- endif -%}
+
+    {%- if section.settings.subheading != blank -%}
+      <p class="section-subtitle">{{ section.settings.subheading | escape }}</p>
+    {%- endif -%}
+
+    <div class="product-upsell__grid grid grid--{{ section.settings.columns }}">
+      {%- for block in section.blocks -%}
+        {%- if block.settings.product != blank -%}
+          <div class="product-upsell__item" {{ block.shopify_attributes }}>
+            {% render 'product-card', product: block.settings.product, lazy_load: true %}
+            {%- if section.settings.show_bundle_cta and block.settings.bundle_label != blank -%}
+              <p class="product-upsell__bundle-label text-muted">{{ block.settings.bundle_label | escape }}</p>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product upsell",
+  "tag": "section",
+  "class": "section-product-upsell",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Pairs well with"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "Columns on desktop",
+      "default": 3
+    },
+    {
+      "type": "checkbox",
+      "id": "show_bundle_cta",
+      "label": "Show bundle labels",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "text",
+          "id": "bundle_label",
+          "label": "Bundle label",
+          "default": "Add to complete your set"
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "templates": ["product", "cart"]
+  },
+  "presets": [
+    {
+      "name": "Product upsell",
+      "blocks": [
+        { "type": "product" },
+        { "type": "product" }
+      ]
+    }
+  ]
+}
+{% endschema %}

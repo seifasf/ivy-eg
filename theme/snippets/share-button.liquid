@@ -1,0 +1,36 @@
+{% comment %}
+  Share button with copy link.
+  Accepts:
+  - share_url: {String}
+  - title: {String}
+  - class: {String}
+{% endcomment %}
+{%- liquid
+  assign url = share_url | default: canonical_url
+  assign share_title = title | default: page_title | escape
+  assign button_class = class | default: 'share-button'
+-%}
+
+<div class="{{ button_class }}" data-share>
+  <button data-share-title="{{ share_title }}" type="button" class="btn btn--secondary btn--pill share-button__trigger" data-share-trigger aria-expanded="false">
+    {% render 'icon', icon: 'link', size: 18 %}
+    <span>{{ 'general.share' | t }}</span>
+  </button>
+  <div class="share-button__panel" data-share-panel hidden>
+    <label class="visually-hidden" for="ShareUrl-{{ section.id | default: 'default' }}">{{ 'general.copy_link' | t }}</label>
+    <input
+      id="ShareUrl-{{ section.id | default: 'default' }}"
+      type="text"
+      class="share-button__input field__input"
+      value="{{ url }}"
+      readonly
+      data-share-input
+    >
+    <button type="button" class="btn btn--primary btn--pill" data-share-copy>
+      {{ 'general.copy_link' | t }}
+    </button>
+    <p class="share-button__success visually-hidden" role="status" data-share-success>
+      {{ 'general.link_copied' | t }}
+    </p>
+  </div>
+</div>

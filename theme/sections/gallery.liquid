@@ -1,0 +1,108 @@
+{% render 'section-home-assets' %}
+
+{%- assign columns = section.settings.columns_desktop -%}
+
+<section id="Gallery-{{ section.id }}" class="ivy-section section-padding">
+  <div class="container">
+    <header class="ivy-section__header" data-reveal>
+      {%- if section.settings.title != blank -%}
+        <h2 class="ivy-section__title">{{ section.settings.title }}</h2>
+      {%- endif -%}
+      {%- if section.settings.subtitle != blank -%}
+        <p class="ivy-section__subtitle">{{ section.settings.subtitle }}</p>
+      {%- endif -%}
+    </header>
+
+    <ul
+      class="gallery__grid list-unstyled"
+      role="list"
+      style="grid-template-columns: repeat({{ columns }}, 1fr);"
+    >
+      {%- if section.blocks.size > 0 -%}
+        {%- for block in section.blocks -%}
+          <li class="gallery__item" {{ block.shopify_attributes }} data-reveal>
+            {%- if block.settings.link != blank -%}
+              <a href="{{ block.settings.link }}" class="gallery__link" {% if block.settings.open_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}>
+            {%- endif -%}
+            {%- if block.settings.image != blank -%}
+              {{
+                block.settings.image
+                | image_url: width: 600
+                | image_tag: loading: 'lazy', widths: '200, 400, 600', alt: block.settings.image.alt | default: section.settings.title
+              }}
+            {%- else -%}
+              {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+            {%- endif -%}
+            {%- if block.settings.link != blank -%}
+              </a>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      {%- else -%}
+        {%- for i in (1..6) -%}
+          <li class="gallery__item" data-reveal>{{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}</li>
+        {%- endfor -%}
+      {%- endif -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.gallery.name",
+  "tag": "section",
+  "class": "section-gallery",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "t:sections.gallery.settings.title.label",
+      "default": "@ivywear.eg"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "t:sections.gallery.settings.subtitle.label",
+      "default": "Follow us on Instagram"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "label": "t:sections.gallery.settings.columns_desktop.label",
+      "default": 3
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "t:sections.gallery.blocks.image.name",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:sections.gallery.blocks.image.settings.image.label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:sections.gallery.blocks.image.settings.link.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_new_tab",
+          "label": "t:sections.gallery.blocks.image.settings.open_new_tab.label",
+          "default": true
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.gallery.presets.name"
+    }
+  ]
+}
+{% endschema %}

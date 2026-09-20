@@ -1,0 +1,34 @@
+{% comment %}
+  Product buy buttons and dynamic checkout.
+  Accepts:
+  - product: {Object} (required)
+  - block: {Object}
+  - show_dynamic_checkout: {Boolean}
+  - form_id: {String}
+  - form: {Object} Product form (required for dynamic checkout)
+{% endcomment %}
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign show_dynamic = show_dynamic_checkout | default: block.settings.show_dynamic_checkout
+-%}
+
+<div class="buy-buttons" {{ block.shopify_attributes }}>
+  <button
+    type="submit"
+    name="add"
+    class="btn btn--primary btn--pill buy-buttons__submit"
+    {% unless current_variant.available %}disabled aria-disabled="true"{% endunless %}
+  >
+    {%- if current_variant.available -%}
+      {{ 'products.product.add_to_cart' | t }}
+    {%- else -%}
+      {{ 'products.product.sold_out' | t }}
+    {%- endif -%}
+  </button>
+
+  {%- if show_dynamic and current_variant.available -%}
+    <div class="buy-buttons__dynamic">
+      {{ form | payment_button }}
+    </div>
+  {%- endif -%}
+</div>

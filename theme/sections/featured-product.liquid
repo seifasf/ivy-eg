@@ -1,0 +1,112 @@
+{% render 'section-home-assets' %}
+
+{%- assign product = section.settings.product -%}
+
+<section id="FeaturedProduct-{{ section.id }}" class="ivy-section ivy-section--surface section-padding">
+  <div class="container">
+    <header class="ivy-section__header" data-reveal>
+      {%- if section.settings.title != blank -%}
+        <h2 class="ivy-section__title">{{ section.settings.title }}</h2>
+      {%- endif -%}
+    </header>
+
+    {%- if product != blank -%}
+      {%- assign current_variant = product.selected_or_first_available_variant -%}
+      <div class="featured-product__layout" data-reveal>
+        <div class="featured-product__media">
+          {%- if product.featured_media -%}
+            {{
+              product.featured_media
+              | image_url: width: 900
+              | image_tag: loading: 'lazy', widths: '400, 600, 900', alt: product.title
+            }}
+          {%- else -%}
+            {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+          {%- endif -%}
+        </div>
+        <div class="featured-product__info">
+          <h3 class="featured-product__title">{{ product.title }}</h3>
+          {% render 'price', product: product, use_variant: true, show_badges: true %}
+
+          {%- if section.settings.show_description and product.description != blank -%}
+            <div class="featured-product__description">{{ product.description | strip_html | truncate: 220 }}</div>
+          {%- endif -%}
+
+          {%- capture featured_product_form_id -%}FeaturedProductForm-{{ section.id }}{%- endcapture -%}
+          {%- form 'product', product, class: 'featured-product__form', id: featured_product_form_id -%}
+            <input type="hidden" name="id" value="{{ current_variant.id }}">
+            {%- if section.settings.show_quantity -%}
+              <div class="field featured-product__quantity">
+                <label class="field__label" for="Quantity-{{ section.id }}">{{ 'products.product.quantity' | t }}</label>
+                <input
+                  class="field__input"
+                  type="number"
+                  name="quantity"
+                  id="Quantity-{{ section.id }}"
+                  min="1"
+                  value="1"
+                >
+              </div>
+            {%- endif -%}
+            <button
+              type="submit"
+              name="add"
+              class="btn btn--primary btn--pill"
+              {% unless current_variant.available %}disabled{% endunless %}
+            >
+              {%- if current_variant.available -%}
+                {{ 'products.product.add_to_cart' | t }}
+              {%- else -%}
+                {{ 'products.product.sold_out' | t }}
+              {%- endif -%}
+            </button>
+            <a href="{{ product.url }}" class="btn btn--secondary btn--pill">{{ 'products.product.view_details' | t }}</a>
+          {%- endform -%}
+        </div>
+      </div>
+    {%- else -%}
+      <div class="featured-collection__empty" data-reveal>
+        <p class="featured-collection__empty-title">{{ 'sections.featured_product.empty_title' | t }}</p>
+        <p class="featured-collection__empty-text">{{ 'sections.featured_product.empty_text' | t }}</p>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.featured_product.name",
+  "tag": "section",
+  "class": "section-featured-product",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "t:sections.featured_product.settings.title.label",
+      "default": "Spotlight"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "t:sections.featured_product.settings.product.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "t:sections.featured_product.settings.show_description.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quantity",
+      "label": "t:sections.featured_product.settings.show_quantity.label",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.featured_product.presets.name"
+    }
+  ]
+}
+{% endschema %}

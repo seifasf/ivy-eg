@@ -1,0 +1,96 @@
+{{ 'customer.css' | asset_url | stylesheet_tag }}
+
+<section class="customer-section">
+  <div class="customer-layout customer-layout--wide">
+    <div class="customer-header">
+      <h1 class="customer-header__title">{{ 'customer.addresses.title' | t }}</h1>
+      <p class="customer-header__subtitle">
+        <a href="{{ routes.account_url }}" class="customer-link">← {{ 'customer.addresses.back_to_account' | t }}</a>
+      </p>
+    </div>
+
+    <nav class="account-nav">
+      <a href="{{ routes.account_url }}" class="account-nav__link">{{ 'customer.account.orders' | t }}</a>
+      <a href="{{ routes.account_addresses_url }}" class="account-nav__link is-active">{{ 'customer.account.addresses' | t }}</a>
+      <a href="{{ routes.account_logout_url }}" class="account-nav__link">{{ 'customer.account.log_out' | t }}</a>
+    </nav>
+
+    <p style="margin-block-end: var(--gap-lg);">
+      <button type="button" class="btn btn--primary btn--pill" aria-expanded="false" aria-controls="AddressNewForm" data-address-new-toggle>
+        {{ 'customer.addresses.add_new' | t }}
+      </button>
+    </p>
+
+    <div id="AddressNewForm" class="customer-card" hidden>
+      <h2 class="contact-panel__title">{{ 'customer.addresses.add_new' | t }}</h2>
+      {%- form 'customer_address', customer.new_address -%}
+        {% render 'customer-address-fields', form: form %}
+        <button type="submit" class="btn btn--primary btn--pill">{{ 'customer.addresses.add' | t }}</button>
+      {%- endform -%}
+    </div>
+
+    <div class="address-grid">
+      {%- for address in customer.addresses -%}
+        <div class="address-card" data-address-id="{{ address.id }}">
+          {%- if address == customer.default_address -%}
+            <span class="address-card__default">{{ 'customer.addresses.default' | t }}</span>
+          {%- endif -%}
+          <p>{{ address | format_address }}</p>
+          <div class="address-card__actions">
+            <button type="button" class="btn btn--secondary" data-address-edit="{{ address.id }}">{{ 'customer.addresses.edit' | t }}</button>
+            {%- unless address == customer.default_address -%}
+              <form method="post" action="{{ address.url }}">
+                <input type="hidden" name="_method" value="delete">
+                <button type="submit" class="btn btn--secondary">{{ 'customer.addresses.delete' | t }}</button>
+              </form>
+            {%- endunless -%}
+          </div>
+
+          <div id="EditAddress_{{ address.id }}" class="customer-card address-form-toggle" hidden>
+            {%- form 'customer_address', address -%}
+              {% render 'customer-address-fields', form: form %}
+              <button type="submit" class="btn btn--primary btn--pill">{{ 'customer.addresses.update' | t }}</button>
+              <button type="button" class="btn btn--secondary" data-address-edit-cancel="{{ address.id }}">{{ 'customer.addresses.cancel' | t }}</button>
+            {%- endform -%}
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    const newToggle = document.querySelector('[data-address-new-toggle]');
+    const newForm = document.getElementById('AddressNewForm');
+    if (newToggle && newForm) {
+      newToggle.addEventListener('click', () => {
+        const open = newForm.hidden;
+        newForm.hidden = !open;
+        newToggle.setAttribute('aria-expanded', String(open));
+      });
+    }
+    document.querySelectorAll('[data-address-edit]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-address-edit');
+        const panel = document.getElementById('EditAddress_' + id);
+        if (panel) panel.hidden = false;
+      });
+    });
+    document.querySelectorAll('[data-address-edit-cancel]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-address-edit-cancel');
+        const panel = document.getElementById('EditAddress_' + id);
+        if (panel) panel.hidden = true;
+      });
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "t:sections.main_addresses.name",
+  "tag": "section",
+  "class": "section-main-addresses"
+}
+{% endschema %}

@@ -1,0 +1,123 @@
+{% render 'section-home-assets' %}
+
+<section id="CollapsibleContent-{{ section.id }}" class="ivy-section ivy-section--surface section-padding">
+  <div class="container">
+    <header class="ivy-section__header" data-reveal>
+      {%- if section.settings.title != blank -%}
+        <h2 class="ivy-section__title">{{ section.settings.title }}</h2>
+      {%- endif -%}
+      {%- if section.settings.subtitle != blank -%}
+        <p class="ivy-section__subtitle">{{ section.settings.subtitle }}</p>
+      {%- endif -%}
+    </header>
+
+    <div class="collapsible-content__list" data-collapsible data-reveal>
+      {%- if section.blocks.size > 0 -%}
+        {%- for block in section.blocks -%}
+          <div
+            class="collapsible-content__item{% if block.settings.open_by_default %} is-open{% endif %}"
+            data-collapsible-item
+            {{ block.shopify_attributes }}
+          >
+            <button
+              type="button"
+              class="collapsible-content__trigger"
+              data-collapsible-trigger
+              aria-expanded="{% if block.settings.open_by_default %}true{% else %}false{% endif %}"
+              id="CollapsibleTrigger-{{ block.id }}"
+              aria-controls="CollapsiblePanel-{{ block.id }}"
+            >
+              <span>{{ block.settings.heading }}</span>
+              {% render 'icon', icon: 'chevron-down', class: 'collapsible-content__icon' %}
+            </button>
+            <div class="collapsible-content__panel" id="CollapsiblePanel-{{ block.id }}" role="region" aria-labelledby="CollapsibleTrigger-{{ block.id }}">
+              <div class="collapsible-content__panel-inner">
+                <div class="collapsible-content__answer rte">{{ block.settings.content }}</div>
+              </div>
+            </div>
+          </div>
+        {%- endfor -%}
+      {%- else -%}
+        <div class="collapsible-content__item" data-collapsible-item>
+          <button type="button" class="collapsible-content__trigger" data-collapsible-trigger aria-expanded="false">
+            <span>{{ 'sections.collapsible_content.defaults.question' | t }}</span>
+            {% render 'icon', icon: 'chevron-down', class: 'collapsible-content__icon' %}
+          </button>
+          <div class="collapsible-content__panel" role="region">
+            <div class="collapsible-content__panel-inner">
+              <div class="collapsible-content__answer">{{ 'sections.collapsible_content.defaults.answer' | t }}</div>
+            </div>
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.collapsible_content.name",
+  "tag": "section",
+  "class": "section-collapsible-content",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "t:sections.collapsible_content.settings.title.label",
+      "default": "FAQ"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "t:sections.collapsible_content.settings.subtitle.label"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collapsible_row",
+      "name": "t:sections.collapsible_content.blocks.row.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:sections.collapsible_content.blocks.row.settings.heading.label",
+          "default": "Question"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "t:sections.collapsible_content.blocks.row.settings.content.label",
+          "default": "<p>Answer goes here.</p>"
+        },
+        {
+          "type": "checkbox",
+          "id": "open_by_default",
+          "label": "t:sections.collapsible_content.blocks.row.settings.open_by_default.label",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.collapsible_content.presets.name",
+      "blocks": [
+        {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "What is your return policy?",
+            "content": "<p>Contact us within 14 days for eligible returns.</p>"
+          }
+        },
+        {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Do you ship across Egypt?",
+            "content": "<p>Yes — we deliver nationwide with tracked shipping.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,157 @@
+{{ 'section-pages.css' | asset_url | stylesheet_tag }}
+
+<article class="page-section">
+  <div class="page-content article-section" style="padding-block: {{ section.settings.padding_top }}px {{ section.settings.padding_bottom }}px;">
+    <header class="article-header">
+      <p class="article-header__meta">
+        {{ article.published_at | time_tag: format: 'date' }}
+        {%- if article.author != blank -%}
+          · {{ 'blogs.article.by_author' | t: author: article.author }}
+        {%- endif -%}
+      </p>
+      <h1 class="article-header__title">{{ article.title | escape }}</h1>
+    </header>
+
+    {%- if article.image -%}
+      <div class="article-featured">
+        {{
+          article.image
+          | image_url: width: 1200
+          | image_tag: loading: 'eager', alt: article.image.alt | default: article.title
+        }}
+      </div>
+    {%- endif -%}
+
+    <div class="article-body rte">
+      {{ article.content }}
+    </div>
+
+    <footer class="article-footer">
+      {%- if article.tags.size > 0 and section.settings.show_tags -%}
+        <ul class="article-tags" role="list">
+          {%- for tag in article.tags -%}
+            <li>
+              <a class="article-tags__link" href="{{ blog.url }}/tagged/{{ tag | handle }}">{{ tag | escape }}</a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      {%- if section.settings.show_share -%}
+        {% render 'share-button', share_url: article.url, title: article.title %}
+      {%- endif -%}
+    </footer>
+
+    {%- if section.settings.show_back_link -%}
+      <p style="margin-block-start: var(--gap-xl);">
+        <a href="{{ blog.url }}" class="customer-link">← {{ 'blogs.article.back_to_blog' | t: title: blog.title }}</a>
+      </p>
+    {%- endif -%}
+  </div>
+
+  {%- if blog.comments_enabled? and section.settings.show_comments -%}
+    <div class="page-content article-comments" style="padding-block-end: {{ section.settings.padding_bottom }}px;">
+      <h2 class="article-comments__title">{{ 'blogs.comments.title' | t }}</h2>
+
+      {%- if article.comments_count > 0 -%}
+        {%- paginate article.comments by 5 -%}
+          {%- for comment in article.comments -%}
+            <div class="comment" id="comment-{{ comment.id }}">
+              <p class="comment__meta">{{ comment.author | escape }} · {{ comment.created_at | time_tag: format: 'date' }}</p>
+              <div class="rte">{{ comment.content }}</div>
+            </div>
+          {%- endfor -%}
+          {%- if paginate.pages > 1 -%}
+            {% render 'pagination', paginate: paginate %}
+          {%- endif -%}
+        {%- endpaginate -%}
+      {%- endif -%}
+
+      {%- form 'new_comment', article -%}
+        <h3 style="margin-block: var(--gap-lg) var(--gap-md);">{{ 'blogs.comments.form_title' | t }}</h3>
+
+        {%- if form.posted_successfully? -%}
+          <p class="contact-form__success" role="status">{{ 'blogs.comments.success' | t }}</p>
+        {%- endif -%}
+
+        {%- if form.errors -%}
+          <div class="contact-form__errors" role="alert">
+            <ul>
+              {%- for field in form.errors -%}
+                <li>{{ form.errors.translated_fields[field] | capitalize }} {{ form.errors.messages[field] }}</li>
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
+
+        <div class="field">
+          <label class="field__label" for="CommentAuthor">{{ 'blogs.comments.name' | t }}</label>
+          <input class="field__input" type="text" name="comment[author]" id="CommentAuthor" value="{{ form.author }}" required>
+        </div>
+        <div class="field">
+          <label class="field__label" for="CommentEmail">{{ 'blogs.comments.email' | t }}</label>
+          <input class="field__input" type="email" name="comment[email]" id="CommentEmail" value="{{ form.email }}" required>
+        </div>
+        <div class="field">
+          <label class="field__label" for="CommentBody">{{ 'blogs.comments.message' | t }}</label>
+          <textarea class="field__textarea" name="comment[body]" id="CommentBody" required>{{ form.body }}</textarea>
+        </div>
+        <button type="submit" class="btn btn--primary btn--pill">{{ 'blogs.comments.post' | t }}</button>
+      {%- endform -%}
+    </div>
+  {%- endif -%}
+</article>
+
+{% schema %}
+{
+  "name": "t:sections.main_article.name",
+  "tag": "section",
+  "class": "section-main-article",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_tags",
+      "label": "t:sections.main_article.settings.show_tags.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_share",
+      "label": "t:sections.main_article.settings.show_share.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_back_link",
+      "label": "t:sections.main_article.settings.show_back_link.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_comments",
+      "label": "t:sections.main_article.settings.show_comments.label",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    }
+  ]
+}
+{% endschema %}

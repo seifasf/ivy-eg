@@ -1,0 +1,106 @@
+{{ 'section-collection.css' | asset_url | stylesheet_tag }}
+{{ 'component-facets.css' | asset_url | stylesheet_tag }}
+{{ 'component-predictive-search.css' | asset_url | stylesheet_tag }}
+
+<section class="search-page section-padding" id="Search-{{ section.id }}">
+  <div class="container">
+    {% render 'breadcrumbs', class: 'search-page__breadcrumbs' %}
+
+    <h1 class="search-page__title section-title">{{ 'search.title' | t }}</h1>
+
+    <form action="{{ routes.search_url }}" method="get" role="search" class="search-page__form">
+      <label class="visually-hidden" for="SearchInput-{{ section.id }}">{{ 'search.placeholder' | t }}</label>
+      <div class="search-page__field">
+        <input
+          type="search"
+          name="q"
+          id="SearchInput-{{ section.id }}"
+          class="search-page__input field__input"
+          value="{{ search.terms | escape }}"
+          placeholder="{{ 'search.placeholder' | t }}"
+          {% if section.settings.enable_predictive %}data-predictive-search-input{% endif %}
+          autocomplete="off"
+        >
+        <button type="submit" class="btn btn--primary btn--pill search-page__submit">
+          {% render 'icon', icon: 'search', size: 18 %}
+          {{ 'general.search' | t }}
+        </button>
+      </div>
+      <input type="hidden" name="options[prefix]" value="last">
+    </form>
+
+    {%- if section.settings.enable_predictive -%}
+      <div class="predictive-search predictive-search--page" data-predictive-search hidden></div>
+    {%- endif -%}
+
+    {%- if search.performed -%}
+      <p class="search-page__count text-muted" data-collection-count>
+        {{ 'search.results_with_count' | t: count: search.results_count }}
+      </p>
+
+      {%- if search.filters.size > 0 -%}
+        {% render 'facets', results: search, enable_sorting: section.settings.enable_sorting %}
+      {%- endif -%}
+
+      <div class="search-page__results grid grid--4" data-product-grid data-view="grid">
+        {%- paginate search.results by section.settings.results_per_page -%}
+          {%- if search.results.size == 0 -%}
+            <p class="search-page__empty text-muted">{{ 'search.no_results' | t: terms: search.terms }}</p>
+          {%- else -%}
+            {%- for item in search.results -%}
+              {%- case item.object_type -%}
+                {%- when 'product' -%}
+                  {% render 'product-card', product: item, lazy_load: true %}
+                {%- else -%}
+                  <article class="search-page__article">
+                    <h2 class="search-page__article-title">
+                      <a href="{{ item.url }}">{{ item.title | escape }}</a>
+                    </h2>
+                    {%- if item.summary -%}
+                      <p class="search-page__article-summary text-muted">{{ item.summary | strip_html | truncate: 160 }}</p>
+                    {%- endif -%}
+                  </article>
+              {%- endcase -%}
+            {%- endfor -%}
+          {%- endif -%}
+
+          {% render 'pagination', paginate: paginate, class: 'search-page__pagination' %}
+        {%- endpaginate -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Search results",
+  "tag": "section",
+  "class": "section-main-search",
+  "settings": [
+    {
+      "type": "range",
+      "id": "results_per_page",
+      "min": 8,
+      "max": 36,
+      "step": 4,
+      "label": "Results per page",
+      "default": 16
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sorting",
+      "label": "Enable sorting",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_predictive",
+      "label": "Enable predictive search on page",
+      "default": false
+    }
+  ],
+  "enabled_on": {
+    "templates": ["search"]
+  }
+}
+{% endschema %}

@@ -1,0 +1,67 @@
+{% comment %}
+  Product card snippet.
+  Accepts:
+  - product: {Object} (required)
+  - show_vendor: {Boolean}
+  - lazy_load: {Boolean}
+  - class: {String}
+{% endcomment %}
+{%- liquid
+  assign card_class = class | default: 'product-card'
+  assign card_product = product
+  assign lazy = lazy_load | default: true
+-%}
+
+<article class="{{ card_class }}" data-product-id="{{ card_product.id }}">
+  <a href="{{ card_product.url }}" class="product-card__media-link" tabindex="-1" aria-hidden="true">
+    <div class="product-card__media">
+      {%- if card_product.featured_media -%}
+        {{
+          card_product.featured_media
+          | image_url: width: 600
+          | image_tag:
+            class: 'product-card__image',
+            loading: lazy,
+            sizes: '(min-width: 968px) 25vw, (min-width: 480px) 50vw, 100vw',
+            widths: '200, 400, 600, 800',
+            alt: card_product.featured_media.alt | default: card_product.title | escape
+        }}
+      {%- else -%}
+        <div class="product-card__placeholder">{{ 'accessibility.loading' | t }}</div>
+      {%- endif -%}
+    </div>
+  </a>
+
+  <div class="product-card__info">
+    {%- if show_vendor and card_product.vendor != blank -%}
+      <span class="product-card__vendor">{{ card_product.vendor }}</span>
+    {%- endif -%}
+
+    <h3 class="product-card__title">
+      <a href="{{ card_product.url }}" class="product-card__title-link">
+        {{ card_product.title | escape }}
+      </a>
+    </h3>
+
+    {%- if card_product.description != blank -%}
+      <p class="product-card__description">{{ card_product.description | strip_html | truncate: 80 }}</p>
+    {%- endif -%}
+
+    {% render 'price', product: card_product, use_variant: true, class: 'product-card__price' %}
+
+    <div class="product-card__actions">
+      {%- if card_product.available -%}
+        <a href="{{ card_product.url }}" class="btn btn--primary btn--pill">
+          {{ 'products.product.add_to_cart' | t }}
+        </a>
+      {%- else -%}
+        <span class="btn btn--secondary btn--pill" aria-disabled="true">
+          {{ 'products.product.sold_out' | t }}
+        </span>
+      {%- endif -%}
+      <a href="{{ card_product.url }}" class="btn btn--secondary btn--pill">
+        {{ 'products.product.view_details' | t }}
+      </a>
+    </div>
+  </div>
+</article>

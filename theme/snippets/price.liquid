@@ -1,0 +1,52 @@
+{% comment %}
+  Renders product price.
+  Accepts:
+  - product: {Object} Product (required)
+  - use_variant: {Boolean} Use selected/first variant
+  - show_badges: {Boolean}
+  - class: {String}
+{% endcomment %}
+{%- liquid
+  assign price_class = class | default: 'price'
+  assign target = product
+  if use_variant
+    assign target = product.selected_or_first_available_variant
+  endif
+
+  assign compare_at = target.compare_at_price
+  assign price = target.price
+  assign available = target.available | default: false
+  assign on_sale = false
+  if compare_at > price
+    assign on_sale = true
+  endif
+-%}
+
+<div class="{{ price_class }}{% if on_sale %} price--on-sale{% endif %}{% unless available %} price--sold-out{% endunless %}">
+  <div class="price__container">
+    {%- if on_sale -%}
+      <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+      <s class="price__compare">{{ compare_at | money }}</s>
+      <span class="visually-hidden">{{ 'products.product.price.sale_price' | t }}</span>
+    {%- endif -%}
+    <span class="price__regular">{{ price | money }}</span>
+  </div>
+
+  {%- if show_badges and on_sale -%}
+    <span class="badge badge--sale">{{ 'products.product.on_sale' | t }}</span>
+  {%- endif -%}
+
+  {%- if target.unit_price_measurement -%}
+    <span class="price__unit visually-hidden">
+      {{ 'products.product.price.unit_price' | t }}
+    </span>
+    <span class="price__unit-caption">
+      {{ target.unit_price | money }}
+      <span aria-hidden="true">/</span>
+      {%- if target.unit_price_measurement.reference_value != 1 -%}
+        {{ target.unit_price_measurement.reference_value }}
+      {%- endif -%}
+      {{ target.unit_price_measurement.reference_unit }}
+    </span>
+  {%- endif -%}
+</div>

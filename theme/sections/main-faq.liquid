@@ -1,0 +1,132 @@
+{{ 'section-pages.css' | asset_url | stylesheet_tag }}
+
+<section class="page-section">
+  <div class="page-hero">
+    <h1 class="page-hero__title">
+      {%- if section.settings.heading != blank -%}
+        {{ section.settings.heading | escape }}
+      {%- else -%}
+        {{ page.title | escape }}
+      {%- endif -%}
+    </h1>
+    {%- if section.settings.subheading != blank -%}
+      <p class="page-hero__subtitle">{{ section.settings.subheading | escape }}</p>
+    {%- endif -%}
+  </div>
+
+  <div class="page-content" style="padding-block: {{ section.settings.padding_top }}px {{ section.settings.padding_bottom }}px;">
+    {%- if page.content != blank -%}
+      <div class="page-content__rte rte" style="margin-block-end: var(--gap-2xl);">
+        {{ page.content }}
+      </div>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <div class="faq-list">
+        {%- for block in section.blocks -%}
+          <details class="faq-item" {{ block.shopify_attributes }}>
+            <summary class="faq-item__summary">
+              <span>{{ block.settings.question | escape }}</span>
+              <span class="faq-item__icon" aria-hidden="true">{% render 'icon', icon: 'plus', size: 20 %}</span>
+            </summary>
+            <div class="faq-item__answer rte">
+              {{ block.settings.answer }}
+            </div>
+          </details>
+        {%- endfor -%}
+      </div>
+    {%- else -%}
+      <p class="empty-state">{{ 'faq.empty' | t }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:sections.main_faq.name",
+  "tag": "section",
+  "class": "section-main-faq",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:sections.main_faq.settings.heading.label",
+      "default": "FAQ"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "t:sections.main_faq.settings.subheading.label",
+      "default": "Answers to common questions about IVY."
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "question",
+      "name": "t:sections.main_faq.blocks.question.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "t:sections.main_faq.blocks.question.settings.question.label",
+          "default": "Question"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "t:sections.main_faq.blocks.question.settings.answer.label",
+          "default": "<p>Answer goes here.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.main_faq.presets.name",
+      "blocks": [
+        {
+          "type": "question",
+          "settings": {
+            "question": "What is your shipping policy?",
+            "answer": "<p>We ship across Egypt. Delivery times vary by city; you'll see estimates at checkout.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "How do returns work?",
+            "answer": "<p>Unused items in original packaging may be returned within 14 days. Contact us to start a return.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "How can I track my order?",
+            "answer": "<p>You'll receive tracking by email once your order ships. You can also view orders in your account.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

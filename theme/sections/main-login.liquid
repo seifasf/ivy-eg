@@ -1,0 +1,121 @@
+{{ 'customer.css' | asset_url | stylesheet_tag }}
+
+<section class="customer-section">
+  <div class="customer-layout customer-layout--narrow">
+    <div class="customer-header">
+      <h1 class="customer-header__title">{{ 'customer.login.title' | t }}</h1>
+      {%- if section.settings.subheading != blank -%}
+        <p class="customer-header__subtitle">{{ section.settings.subheading | escape }}</p>
+      {%- endif -%}
+    </div>
+
+    <div class="customer-card">
+      {%- form 'customer_login', novalidate: 'novalidate' -%}
+        {%- if form.errors -%}
+          <div class="customer-errors" role="alert">
+            {{ form.errors | default_errors }}
+          </div>
+        {%- endif -%}
+
+        <div class="field">
+          <label class="field__label" for="CustomerEmail">{{ 'customer.login.email' | t }}</label>
+          <input
+            type="email"
+            name="customer[email]"
+            id="CustomerEmail"
+            autocomplete="email"
+            class="field__input"
+            placeholder="{{ 'customer.login.email' | t }}"
+          >
+        </div>
+
+        {%- if form.password_needed -%}
+          <div class="field">
+            <label class="field__label" for="CustomerPassword">{{ 'customer.login.password' | t }}</label>
+            <input
+              type="password"
+              name="customer[password]"
+              id="CustomerPassword"
+              autocomplete="current-password"
+              class="field__input"
+              placeholder="{{ 'customer.login.password' | t }}"
+            >
+          </div>
+        {%- endif -%}
+
+        <button type="submit" class="btn btn--primary btn--pill" style="inline-size: 100%;">
+          {{ 'customer.login.sign_in' | t }}
+        </button>
+
+        <div class="customer-form__footer customer-form__footer--row">
+          <a href="{{ routes.account_register_url }}" class="customer-link">{{ 'customer.login.create_account' | t }}</a>
+          <a href="#RecoverPassword" class="customer-link">{{ 'customer.login.forgot_password' | t }}</a>
+        </div>
+      {%- endform -%}
+    </div>
+
+    <div class="customer-card" id="RecoverPassword" hidden>
+      <h2 class="contact-panel__title">{{ 'customer.recover_password.title' | t }}</h2>
+      <p class="contact-panel__text">{{ 'customer.recover_password.subtext' | t }}</p>
+
+      {%- form 'recover_customer_password' -%}
+        {%- if form.posted_successfully? -%}
+          <p class="customer-success" role="status">{{ 'customer.recover_password.success' | t }}</p>
+        {%- endif -%}
+        {%- if form.errors -%}
+          <div class="customer-errors">{{ form.errors | default_errors }}</div>
+        {%- endif -%}
+
+        <div class="field">
+          <label class="field__label" for="RecoverEmail">{{ 'customer.recover_password.email' | t }}</label>
+          <input type="email" name="email" id="RecoverEmail" class="field__input" autocomplete="email">
+        </div>
+        <button type="submit" class="btn btn--secondary btn--pill">{{ 'customer.recover_password.submit' | t }}</button>
+        <p style="margin-block-start: var(--gap-md);">
+          <a href="#Login" class="customer-link">{{ 'customer.recover_password.cancel' | t }}</a>
+        </p>
+      {%- endform -%}
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    const recover = document.getElementById('RecoverPassword');
+    const loginCard = document.querySelector('.customer-card');
+    document.querySelectorAll('a[href="#RecoverPassword"]').forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (loginCard) loginCard.hidden = true;
+        if (recover) recover.hidden = false;
+      });
+    });
+    document.querySelectorAll('a[href="#Login"]').forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (loginCard) loginCard.hidden = false;
+        if (recover) recover.hidden = true;
+      });
+    });
+    if (window.location.hash === '#recover') {
+      if (loginCard) loginCard.hidden = true;
+      if (recover) recover.hidden = false;
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "t:sections.main_login.name",
+  "tag": "section",
+  "class": "section-main-login",
+  "settings": [
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "t:sections.main_login.settings.subheading.label",
+      "default": "Sign in to track orders and manage your account."
+    }
+  ]
+}
+{% endschema %}
