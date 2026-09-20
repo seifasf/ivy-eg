@@ -786,6 +786,56 @@
   .checkout-subtitle {
     font-size: 0.9rem;
   }
+  
+  .checkout-form {
+    padding: 1.5rem 1rem;
+  }
+  
+  .form-section-title {
+    font-size: 1rem;
+  }
+  
+  .form-input,
+  .form-textarea,
+  .form-select {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 0.75rem;
+  }
+  
+  .payment-option {
+    padding: 0.875rem;
+  }
+  
+  .order-summary {
+    padding: 1.5rem 1rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .checkout-container {
+    padding: 1.25rem 0.75rem;
+  }
+  
+  .checkout-title {
+    font-size: 1.5rem;
+  }
+  
+  .checkout-form {
+    padding: 1.25rem 0.75rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+}
+  
+  .checkout-title {
+    font-size: 1.75rem;
+  }
+  
+  .checkout-subtitle {
+    font-size: 0.9rem;
+  }
 
   .checkout-content {
     gap: 1.5rem;

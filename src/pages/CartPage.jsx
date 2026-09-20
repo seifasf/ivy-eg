@@ -55,7 +55,21 @@ function CartPage() {
             {cartItems.map((item) => (
               <div key={item.id} className="cart-page-item">
                 <div className="cart-page-item-icon">
-                  {React.createElement(item.icon, { size: 32 })}
+                  {item.image ? (
+                    <img 
+                      src={item.image} 
+                      alt={item.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '10px' }}
+                      onError={(e) => {
+                        e.target.style.display = 'none'
+                        e.target.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: #ffffff;">📦</div>'
+                      }}
+                    />
+                  ) : item.icon ? (
+                    React.createElement(item.icon, { size: 32 })
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', color: '#ffffff' }}>📦</div>
+                  )}
                 </div>
                 
                 <div className="cart-page-item-details">
@@ -63,7 +77,11 @@ function CartPage() {
                   {item.selectedSize && (
                     <p className="cart-page-item-size">Size: {item.selectedSize}</p>
                   )}
-                  <p className="cart-page-item-price">{item.price}</p>
+                  <p className="cart-page-item-price">
+                    {typeof item.price === 'number' 
+                      ? `${item.price.toLocaleString()} EGP` 
+                      : item.price}
+                  </p>
                 </div>
 
                 <div className="cart-page-item-quantity">

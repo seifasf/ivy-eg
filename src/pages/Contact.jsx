@@ -1,18 +1,35 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { HiUser, HiMail, HiPencil, HiCheckCircle } from 'react-icons/hi'
 import { FaInstagram, FaTiktok } from 'react-icons/fa'
 import { BiLink } from 'react-icons/bi'
+import { contactAPI, settingsAPI } from '../services/api'
 import './Contact.css'
 
 function Contact() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     message: ''
   })
 
   const [submitted, setSubmitted] = useState(false)
   const [errors, setErrors] = useState({})
+  const [storeEmail, setStoreEmail] = useState('')
+
+  useEffect(() => {
+    const loadStoreEmail = async () => {
+      try {
+        const storeSettings = await settingsAPI.getByType('store')
+        if (storeSettings && storeSettings.data && storeSettings.data.email) {
+          setStoreEmail(storeSettings.data.email)
+        }
+      } catch (error) {
+        // Error loading store email
+      }
+    }
+    loadStoreEmail()
+  }, [])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -42,6 +59,10 @@ function Contact() {
       newErrors.email = 'Email is invalid'
     }
 
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone is required'
+    }
+
     if (!formData.message.trim()) {
       newErrors.message = 'Message is required'
     }
@@ -50,17 +71,27 @@ function Contact() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (validateForm()) {
-      // Here you would typically send the form data to a server
-      console.log('Form submitted:', formData)
+      try {
+        // Send to backend API
+        await contactAPI.sendMessage({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          comment: formData.message
+        })
+        
       setSubmitted(true)
       setTimeout(() => {
         setSubmitted(false)
-        setFormData({ name: '', email: '', message: '' })
+          setFormData({ name: '', email: '', phone: '', message: '' })
       }, 4000)
+      } catch (error) {
+        alert(error.message || 'Failed to send message. Please check your information and try again.')
+      }
     }
   }
 
@@ -84,15 +115,17 @@ function Contact() {
             </p>
 
             <div className="contact-info-items">
+              {storeEmail && (
               <div className="contact-info-item">
                 <div className="info-icon-wrapper">
                   <HiMail size={24} />
                 </div>
                 <div className="info-content">
                   <h4>Email</h4>
-                  <a href="mailto:ivyforhelp@gmail.com">ivyforhelp@gmail.com</a>
+                    <a href={`mailto:${storeEmail}`}>{storeEmail}</a>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="social-section">
@@ -159,6 +192,23 @@ function Contact() {
                     placeholder="john@example.com"
                   />
                   {errors.email && <span className="error-text">{errors.email}</span>}
+                </div>
+
+                <div className="form-group-modern">
+                  <label htmlFor="phone" className="form-label-modern">
+                    <HiMail size={18} />
+                    <span>Phone</span>
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className={`form-input-modern ${errors.phone ? 'error' : ''}`}
+                    placeholder="01012345678"
+                  />
+                  {errors.phone && <span className="error-text">{errors.phone}</span>}
                 </div>
 
                 <div className="form-group-modern">

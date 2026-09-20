@@ -66,7 +66,15 @@ export const CartProvider = ({ children }) => {
 
   const getCartTotal = () => {
     return cartItems.reduce((total, item) => {
-      const price = parseFloat(item.price.replace(/[,\sEGP]/g, ''))
+      // Handle both number and string price formats
+      let price
+      if (typeof item.price === 'number') {
+        price = item.price
+      } else if (typeof item.price === 'string') {
+        price = parseFloat(item.price.replace(/[,\sEGP]/g, '')) || 0
+      } else {
+        price = 0
+      }
       return total + price * item.quantity
     }, 0)
   }

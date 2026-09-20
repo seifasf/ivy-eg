@@ -1,62 +1,96 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   HiTruck,
   HiOfficeBuilding,
   HiMail,
   HiPhone,
-  HiLockClosed,
   HiCheckCircle
 } from 'react-icons/hi'
+import { settingsAPI, governorateShippingAPI } from '../../services/api'
 import './Settings.css'
 
 function Settings() {
   const [shippingSettings, setShippingSettings] = useState({
-    baseShippingFee: 50,
-    freeShippingThreshold: 1000,
-    egyptGovernoratesFees: {
-      Cairo: 50,
-      Giza: 50,
-      Alexandria: 75,
-      'Qalyubia': 60,
-      'Sharqia': 70,
-      'Dakahlia': 80,
-      'Beheira': 80,
-      'Gharbia': 75,
-      'Monufia': 70,
-      'Kafr El Sheikh': 80,
-      'Damietta': 85,
-      'Port Said': 90,
-      'Ismailia': 85,
-      'Suez': 85,
-      'North Sinai': 120,
-      'South Sinai': 120,
-      'Minya': 90,
-      'Asyut': 100,
-      'Sohag': 110,
-      'Qena': 115,
-      'Luxor': 120,
-      'Aswan': 130,
-      'Red Sea': 130,
-      'New Valley': 140,
-      'Matrouh': 130,
-      'Fayoum': 70,
-      'Beni Suef': 75
-    }
+    baseShippingFee: 0,
+    freeShippingThreshold: 0,
+    egyptGovernoratesFees: {}
   })
 
   const [storeSettings, setStoreSettings] = useState({
-    storeName: 'IVY',
-    email: 'ivyforhelp@gmail.com',
-    phone: '+20 100 000 0000'
+    storeName: '',
+    email: '',
+    phone: ''
   })
 
   const [emailSettings, setEmailSettings] = useState({
-    serviceId: 'YOUR_SERVICE_ID',
-    templateId: 'YOUR_TEMPLATE_ID',
-    publicKey: 'YOUR_PUBLIC_KEY'
+    serviceId: '',
+    templateId: '',
+    publicKey: ''
   })
 
   const [saveMessage, setSaveMessage] = useState({ show: false, text: '', type: '' })
+  const [loading, setLoading] = useState(true)
+
+  // Load settings from backend on mount
+  useEffect(() => {
+    loadSettings()
+  }, [])
+
+  const loadSettings = async () => {
+    try {
+      setLoading(true)
+      
+      // Load store settings
+      const storeSettingsData = await settingsAPI.getByType('store')
+      if (storeSettingsData && storeSettingsData.data) {
+        setStoreSettings(prev => ({
+          ...prev,
+          ...storeSettingsData.data
+        }))
+      }
+      
+      // Load email settings
+      const emailSettingsData = await settingsAPI.getByType('email')
+      if (emailSettingsData && emailSettingsData.data) {
+        const emailData = emailSettingsData.data
+        setEmailSettings({
+          serviceId: emailData.serviceId || '',
+          templateId: emailData.templateId || '',
+          publicKey: emailData.publicKey || ''
+        })
+        // Update email service config
+        const { updateEmailConfig } = await import('../../services/emailService')
+        updateEmailConfig(emailData)
+      }
+      
+      // Load shipping settings
+      const shippingSettingsData = await settingsAPI.getByType('shipping')
+      if (shippingSettingsData && shippingSettingsData.data) {
+        setShippingSettings(prev => ({
+          ...prev,
+          baseShippingFee: shippingSettingsData.data.baseShippingFee || 0,
+          freeShippingThreshold: shippingSettingsData.data.freeShippingThreshold || 0
+        }))
+      }
+      
+      // Load governorate shipping fees
+      const governorateFees = await governorateShippingAPI.getAll()
+      if (governorateFees && governorateFees.length > 0) {
+        const feesObj = {}
+        governorateFees.forEach(item => {
+          feesObj[item.governorate] = item.shippingFee
+        })
+        setShippingSettings(prev => ({
+          ...prev,
+          egyptGovernoratesFees: feesObj
+        }))
+      }
+    } catch (error) {
+      // Error loading settings
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleShippingChange = (e) => {
     const { name, value } = e.target
@@ -99,22 +133,70 @@ function Settings() {
     }, 3000)
   }
 
-  const saveShippingSettings = () => {
-    // TODO: Save to backend
-    localStorage.setItem('shippingSettings', JSON.stringify(shippingSettings))
-    showSaveMessage('Shipping settings saved successfully!', 'success')
+  const saveShippingSettings = async () => {
+    try {
+      // Save base shipping settings
+      await settingsAPI.update('shipping', {
+        baseShippingFee: shippingSettings.baseShippingFee,
+        freeShippingThreshold: shippingSettings.freeShippingThreshold
+      })
+      
+      // Save governorate fees (update each one)
+      const updatePromises = Object.entries(shippingSettings.egyptGovernoratesFees).map(
+        ([governorate, fee]) => governorateShippingAPI.update(governorate, fee)
+      )
+      await Promise.all(updatePromises)
+      
+      showSaveMessage('Shipping settings saved successfully!', 'success')
+    } catch (error) {
+      showSaveMessage(error.message || 'Failed to save shipping settings. Please try again.', 'error')
+    }
   }
 
-  const saveStoreSettings = () => {
-    // TODO: Save to backend
-    localStorage.setItem('storeSettings', JSON.stringify(storeSettings))
-    showSaveMessage('Store information saved successfully!', 'success')
+  const saveStoreSettings = async () => {
+    if (!storeSettings.storeName || !storeSettings.email || !storeSettings.phone) {
+      showSaveMessage('Please fill in all store information fields', 'error')
+      return
+    }
+    try {
+      await settingsAPI.update('store', {
+        storeName: storeSettings.storeName,
+        email: storeSettings.email,
+        phone: storeSettings.phone
+      })
+      showSaveMessage('Store information saved successfully!', 'success')
+    } catch (error) {
+      showSaveMessage(error.message || 'Failed to save store information. Please try again.', 'error')
+    }
   }
 
-  const saveEmailSettings = () => {
-    // TODO: Save to backend
-    localStorage.setItem('emailSettings', JSON.stringify(emailSettings))
-    showSaveMessage('Email settings saved successfully!', 'success')
+  const saveEmailSettings = async () => {
+    try {
+      await settingsAPI.update('email', {
+        serviceId: emailSettings.serviceId,
+        templateId: emailSettings.templateId,
+        publicKey: emailSettings.publicKey
+      })
+      // Update email service config
+      const { updateEmailConfig } = await import('../../services/emailService')
+      updateEmailConfig(emailSettings)
+      showSaveMessage('Email settings saved successfully!', 'success')
+    } catch (error) {
+      showSaveMessage(error.message || 'Failed to save email settings. Please try again.', 'error')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="admin-settings-page">
+        <div className="admin-page-header">
+          <div>
+            <h1 className="admin-page-title">Settings</h1>
+            <p className="admin-page-subtitle">Loading settings...</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -175,26 +257,30 @@ function Settings() {
 
           <div className="governorates-section">
             <h3>Shipping Fees by Governorate</h3>
-            <p className="section-note">Customize shipping fees for specific governorates</p>
-            <div className="governorates-grid">
-              {Object.entries(shippingSettings.egyptGovernoratesFees)
-                .sort(([a], [b]) => a.localeCompare(b))
-                .map(([governorate, fee]) => (
-                  <div key={governorate} className="governorate-fee-item">
-                    <label>{governorate}</label>
-                    <div className="fee-input-wrapper">
-                      <input
-                        type="number"
-                        value={fee}
-                        onChange={(e) => handleGovernorateFeeChange(governorate, e.target.value)}
-                        min="0"
-                        step="1"
-                      />
-                      <span>EGP</span>
+            <p className="section-note">Customize shipping fees for specific governorates. Manage these fees from the Dashboard page.</p>
+            {Object.keys(shippingSettings.egyptGovernoratesFees).length === 0 ? (
+              <p className="no-fees-message">No shipping fees configured yet. Go to Dashboard to set up governorate fees.</p>
+            ) : (
+              <div className="governorates-grid">
+                {Object.entries(shippingSettings.egyptGovernoratesFees)
+                  .sort(([a], [b]) => a.localeCompare(b))
+                  .map(([governorate, fee]) => (
+                    <div key={governorate} className="governorate-fee-item">
+                      <label>{governorate}</label>
+                      <div className="fee-input-wrapper">
+                        <input
+                          type="number"
+                          value={fee}
+                          onChange={(e) => handleGovernorateFeeChange(governorate, e.target.value)}
+                          min="0"
+                          step="1"
+                        />
+                        <span>EGP</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
-            </div>
+                  ))}
+              </div>
+            )}
           </div>
 
           <button className="btn-save-section" onClick={saveShippingSettings}>
@@ -270,7 +356,7 @@ function Settings() {
             <h4>📧 Setup Instructions:</h4>
             <ol>
               <li>Create a free account at <a href="https://www.emailjs.com/" target="_blank" rel="noopener noreferrer">emailjs.com</a></li>
-              <li>Add Gmail service with your email (ivyforhelp@gmail.com)</li>
+              <li>Add Gmail service with your store email</li>
               <li>Create an email template for order confirmations</li>
               <li>Copy your credentials and paste them below</li>
             </ol>
@@ -313,7 +399,7 @@ function Settings() {
 
           <div className="email-status">
             <p>
-              {emailSettings.serviceId === 'YOUR_SERVICE_ID' 
+              {!emailSettings.serviceId || emailSettings.serviceId === '' 
                 ? '⚠️ Email integration not configured yet'
                 : '✅ Email integration configured'}
             </p>
@@ -325,30 +411,6 @@ function Settings() {
         </div>
       </div>
 
-      {/* Admin Password */}
-      <div className="settings-section">
-        <div className="section-header-settings">
-          <HiLockClosed size={24} />
-          <div>
-            <h2>Security</h2>
-            <p>Change admin password and security settings</p>
-          </div>
-        </div>
-
-        <div className="settings-content">
-          <div className="security-info">
-            <h4>🔐 Current Admin Credentials:</h4>
-            <div className="credentials-box">
-              <p><strong>Email:</strong> admin@ivy.eg</p>
-              <p><strong>Password:</strong> IVY@2025</p>
-            </div>
-            <p className="security-note">
-              ⚠️ Password change functionality will be available after backend integration.
-              For now, you can modify credentials in <code>src/context/AdminContext.jsx</code>
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

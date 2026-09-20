@@ -7,6 +7,7 @@ import {
   HiCurrencyDollar,
   HiX
 } from 'react-icons/hi'
+import { ordersAPI } from '../../services/api'
 import './Orders.css'
 
 function Orders() {
@@ -23,17 +24,30 @@ function Orders() {
 
   const fetchOrders = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/admin/orders')
-      // const data = await response.json()
-      // setOrders(data)
-      // setFilteredOrders(data)
-      
-      // For now, set empty array
-      setOrders([])
-      setFilteredOrders([])
+      const data = await ordersAPI.getAll()
+      const formattedOrders = data.map(order => ({
+        id: order._id,
+        customer: {
+          name: order.userInfo?.name || 'N/A',
+          email: order.userInfo?.email || 'N/A',
+          phone: order.userInfo?.phone || 'N/A'
+        },
+        governorate: order.userInfo?.governorate || 'N/A',
+        city: order.userInfo?.address || 'N/A',
+        address: order.userInfo?.address || 'N/A',
+        items: order.items || [],
+        total: order.total || 0,
+        shippingFee: order.shippingFee || 0,
+        status: order.status || 'pending',
+        paymentMethod: order.paymentMethod || 'cash-on-delivery',
+        date: new Date(order.createdAt).toISOString()
+      }))
+      setOrders(formattedOrders)
+      setFilteredOrders(formattedOrders)
     } catch (error) {
       console.error('Error fetching orders:', error)
+      setOrders([])
+      setFilteredOrders([])
     }
   }
 
@@ -66,22 +80,38 @@ function Orders() {
     return colors[status] || '#b0b0b0'
   }
 
-  const handleStatusUpdate = (orderId, newStatus) => {
+  const handleStatusUpdate = async (orderId, newStatus) => {
+    try {
+      await ordersAPI.updateStatus(orderId, newStatus)
     setOrders(orders.map(order =>
       order.id === orderId ? { ...order, status: newStatus } : order
     ))
     if (selectedOrder?.id === orderId) {
       setSelectedOrder({ ...selectedOrder, status: newStatus })
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error)
+      alert(error.message || 'Failed to update order status. Please try again.')
     }
   }
 
-  const handleShippingFeeUpdate = (orderId, newFee) => {
+  const handleShippingFeeUpdate = async (orderId, newFee) => {
     const fee = parseInt(newFee) || 0
+    if (fee < 0) {
+      alert('Shipping fee cannot be negative')
+      return
+    }
+    try {
+      await ordersAPI.updateShippingFee(orderId, fee)
     setOrders(orders.map(order =>
       order.id === orderId ? { ...order, shippingFee: fee } : order
     ))
     if (selectedOrder?.id === orderId) {
       setSelectedOrder({ ...selectedOrder, shippingFee: fee })
+      }
+    } catch (error) {
+      console.error('Error updating shipping fee:', error)
+      alert(error.message || 'Failed to update shipping fee. Please try again.')
     }
   }
 
@@ -253,8 +283,8 @@ function Orders() {
                   {selectedOrder.items.map((item, index) => (
                     <div key={index} className="item-row">
                       <div className="item-details">
-                        <span className="item-name">{item.name}</span>
-                        <span className="item-size">Size: {item.size}</span>
+                        <span className="item-name">{item.title || item.name}</span>
+                        {item.size && <span className="item-size">Size: {item.size}</span>}
                       </div>
                       <div className="item-price-section">
                         <span className="item-qty">x{item.quantity}</span>

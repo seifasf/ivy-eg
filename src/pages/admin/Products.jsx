@@ -9,7 +9,7 @@ import {
   HiEye,
   HiEyeOff
 } from 'react-icons/hi'
-import { productsAPI } from '../../services/api'
+import { productsAPI, getImageUrl } from '../../services/api'
 import './Products.css'
 
 function Products() {
@@ -94,8 +94,8 @@ function Products() {
     })
     // Show existing images as previews
     setImagePreviews({
-      mainImage: `http://localhost:5001/uploads/${product.mainImage}`,
-      additionalImages: product.images.map(img => `http://localhost:5001/uploads/${img}`)
+      mainImage: getImageUrl(product.mainImage),
+      additionalImages: product.images.map(img => getImageUrl(img))
     })
     setImageFiles({ mainImage: null, additionalImages: [] })
     setShowModal(true)
@@ -201,21 +201,21 @@ function Products() {
       closeModal()
     } catch (error) {
       console.error('Error saving product:', error)
-      setError(error.message || 'Failed to save product')
+      setError(error.message || 'Failed to save product. Please check all fields and try again.')
     } finally {
       setLoading(false)
     }
   }
 
   const handleDelete = async (productId) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    if (window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
       try {
         setLoading(true)
         await productsAPI.delete(productId)
         await fetchProducts()
       } catch (error) {
         console.error('Error deleting product:', error)
-        setError('Failed to delete product')
+        setError(error.message || 'Failed to delete product. Please try again.')
       } finally {
         setLoading(false)
       }
@@ -230,7 +230,7 @@ function Products() {
       await fetchProducts()
     } catch (error) {
       console.error('Error updating product:', error)
-      setError('Failed to update product status')
+      setError(error.message || 'Failed to update product status. Please try again.')
     }
   }
 
@@ -289,7 +289,7 @@ function Products() {
               <div className="product-image-wrapper">
                 {product.mainImage ? (
                   <img 
-                    src={`http://localhost:5001/uploads/${product.mainImage}`} 
+                    src={getImageUrl(product.mainImage)} 
                     alt={product.title} 
                   />
                 ) : (

@@ -1,37 +1,41 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
+import { useUser } from '../context/UserContext'
 import { sendOrderConfirmation } from '../services/emailService'
+import { publicCheckoutAPI, promoCodesAPI, governorateShippingAPI } from '../services/api'
 import { HiUser, HiMail, HiPhone, HiLocationMarker, HiHome, HiCheckCircle } from 'react-icons/hi'
 import './Checkout.css'
 
+// Match exact names from backend
 const egyptGovernorates = [
   'Cairo',
-  'Alexandria',
   'Giza',
+  'Alexandria',
   'Qalyubia',
-  'Port Said',
-  'Suez',
-  'Dakahlia',
-  'Damietta',
   'Sharqia',
+  'Dakahlia',
+  'Beheira',
   'Gharbia',
   'Monufia',
-  'Beheira',
+  'Kafr El Sheikh',
+  'Damietta',
+  'Port Said',
   'Ismailia',
-  'Faiyum',
-  'Beni Suef',
+  'Suez',
+  'North Sinai',
+  'South Sinai',
   'Minya',
   'Asyut',
   'Sohag',
   'Qena',
-  'Aswan',
   'Luxor',
+  'Aswan',
   'Red Sea',
   'New Valley',
-  'Matruh',
-  'North Sinai',
-  'South Sinai'
+  'Matrouh',
+  'Fayoum',
+  'Beni Suef'
 ].sort()
 
 function Checkout() {
@@ -52,6 +56,99 @@ function Checkout() {
   })
   const [errors, setErrors] = useState({})
   const [emailStatus, setEmailStatus] = useState(null)
+  const [shippingFee, setShippingFee] = useState(0)
+  const [promoDiscount, setPromoDiscount] = useState(0)
+  const [validatedPromoCode, setValidatedPromoCode] = useState(null)
+  const [loadingShipping, setLoadingShipping] = useState(false)
+
+  // Fetch shipping fee when governorate changes
+  useEffect(() => {
+    const fetchShippingFee = async () => {
+      if (formData.governorate) {
+        try {
+          setLoadingShipping(true)
+          const data = await governorateShippingAPI.getByGovernorate(formData.governorate)
+          
+          if (data && data.shippingFee !== undefined && data.shippingFee !== null) {
+            setShippingFee(Number(data.shippingFee))
+          } else {
+            // Try fallback: get all and find match
+            try {
+              const allFees = await governorateShippingAPI.getAll()
+              const matchingFee = allFees.find(f => 
+                f.governorate && f.governorate.toLowerCase() === formData.governorate.toLowerCase()
+              )
+              if (matchingFee && matchingFee.shippingFee !== undefined) {
+                setShippingFee(Number(matchingFee.shippingFee))
+              } else {
+                setShippingFee(0)
+              }
+            } catch (fallbackError) {
+              setShippingFee(0)
+            }
+          }
+        } catch (error) {
+          // Try fallback: get all fees
+          try {
+            const allFees = await governorateShippingAPI.getAll()
+            const matchingFee = allFees.find(f => 
+              f.governorate && f.governorate.toLowerCase() === formData.governorate.toLowerCase()
+            )
+            if (matchingFee && matchingFee.shippingFee !== undefined) {
+              setShippingFee(Number(matchingFee.shippingFee))
+            } else {
+              setShippingFee(0)
+            }
+          } catch (fallbackError) {
+            setShippingFee(0)
+          }
+        } finally {
+          setLoadingShipping(false)
+        }
+      } else {
+        setShippingFee(0)
+      }
+    }
+    fetchShippingFee()
+  }, [formData.governorate])
+
+  // Validate promo code when it changes (with debouncing)
+  useEffect(() => {
+    const validatePromoCode = async () => {
+      if (formData.promoCode && formData.promoCode.trim()) {
+        try {
+          const orderTotal = getCartTotal()
+          const validation = await promoCodesAPI.validate(formData.promoCode.trim(), orderTotal)
+          if (validation.valid) {
+            setPromoDiscount(validation.discount || 0)
+            setValidatedPromoCode(formData.promoCode.trim())
+          } else {
+            setPromoDiscount(0)
+            setValidatedPromoCode(null)
+            if (formData.promoCode.trim()) {
+              setErrors(prev => ({ ...prev, promoCode: validation.message || 'Invalid promo code' }))
+            }
+          }
+        } catch (error) {
+          setPromoDiscount(0)
+          setValidatedPromoCode(null)
+          setErrors(prev => ({ ...prev, promoCode: 'Failed to validate promo code' }))
+        }
+      } else {
+        setPromoDiscount(0)
+        setValidatedPromoCode(null)
+        setErrors(prev => {
+          const newErrors = { ...prev }
+          delete newErrors.promoCode
+          return newErrors
+        })
+      }
+    }
+    
+    // Debounce validation to reduce API calls
+    const timeoutId = setTimeout(validatePromoCode, 800)
+    return () => clearTimeout(timeoutId)
+  }, [formData.promoCode, getCartTotal])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -113,25 +210,75 @@ function Checkout() {
     if (validateForm()) {
       setIsSubmitting(true)
       
-      // Prepare order data
-      const orderData = {
-        customer: formData,
-        items: cartItems,
-        total: getCartTotal()
-      }
+      try {
+        // Calculate final total
+        const subtotal = getCartTotal()
+        const finalTotal = subtotal - promoDiscount + shippingFee
 
-      // Log order for debugging
-      console.log('Order submitted:', orderData)
+        // Prepare order data for backend
+      const orderData = {
+          userId: isAuthenticated && user ? user.id : null, // Link to user if logged in
+          userInfo: {
+            name: formData.fullName,
+            phone: formData.phone,
+            email: formData.email,
+            country: 'Egypt',
+            governorate: formData.governorate,
+            address: formData.address,
+            apartment: formData.city,
+            notes: formData.notes
+          },
+          items: cartItems.map(item => {
+            // Handle both number and string price formats
+            let price
+            if (typeof item.price === 'number') {
+              price = item.price
+            } else if (typeof item.price === 'string') {
+              price = parseFloat(item.price.replace(/[,\sEGP]/g, '')) || 0
+            } else {
+              price = 0
+            }
+            
+            return {
+              productId: item.id,
+              title: item.name,
+              price: price,
+              mainImage: item.image ? item.image.split('/').pop() : '',
+              quantity: item.quantity,
+              size: item.selectedSize || ''
+            }
+          }),
+          paymentMethod: formData.paymentMethod,
+          total: finalTotal,
+          shippingFee: shippingFee,
+          promoCode: validatedPromoCode || ''
+        }
+
+        // Submit order to backend
+        const result = await publicCheckoutAPI.create(orderData)
+        
+        // Apply promo code if valid
+        if (validatedPromoCode) {
+          try {
+            await promoCodesAPI.apply(validatedPromoCode)
+          } catch (error) {
+            // Continue even if promo code application fails
+          }
+        }
 
       // Send confirmation email
-      const emailResult = await sendOrderConfirmation(orderData)
+        const emailResult = await sendOrderConfirmation({
+          customer: formData,
+          items: cartItems,
+          total: finalTotal,
+          shippingFee: shippingFee,
+          promoDiscount: promoDiscount
+        })
       
       if (emailResult.success) {
         setEmailStatus('success')
-        console.log('Confirmation email sent successfully!')
       } else {
         setEmailStatus('failed')
-        console.log('Email failed to send, but order was placed')
       }
 
       setOrderPlaced(true)
@@ -142,6 +289,10 @@ function Checkout() {
       setTimeout(() => {
         navigate('/')
       }, 5000)
+      } catch (error) {
+        alert(error.message || 'Failed to place order. Please check your information and try again.')
+        setIsSubmitting(false)
+      }
     }
   }
 
@@ -190,9 +341,12 @@ function Checkout() {
             )}
             
             <div className="success-details">
-              <p><strong>Order Total:</strong> {getCartTotal().toLocaleString()} EGP</p>
-              {formData.promoCode && (
-                <p><strong>Promo Code:</strong> {formData.promoCode}</p>
+              <p><strong>Order Total:</strong> {(getCartTotal() - promoDiscount + shippingFee).toLocaleString()} EGP</p>
+              {promoDiscount > 0 && (
+                <p><strong>Promo Discount:</strong> -{promoDiscount.toLocaleString()} EGP ({formData.promoCode})</p>
+              )}
+              {shippingFee > 0 && (
+                <p><strong>Shipping Fee:</strong> {shippingFee.toLocaleString()} EGP</p>
               )}
               <p><strong>Payment Method:</strong> {
                 formData.paymentMethod === 'cod' ? 'Cash on Delivery' :
@@ -206,7 +360,7 @@ function Checkout() {
             {formData.paymentMethod === 'telda' && (
               <div className="payment-instructions">
                 <h4>📱 Telda Payment Instructions</h4>
-                <p>Please send <strong>{getCartTotal().toLocaleString()} EGP</strong> to:</p>
+                <p>Please send <strong>{(getCartTotal() - promoDiscount + shippingFee).toLocaleString()} EGP</strong> to:</p>
                 <p className="payment-info-highlight">Username: <strong>ivyeg</strong></p>
               </div>
             )}
@@ -214,8 +368,8 @@ function Checkout() {
             {formData.paymentMethod === 'instapay' && (
               <div className="payment-instructions">
                 <h4>🏦 InstaPay Payment Instructions</h4>
-                <p>Please send <strong>{getCartTotal().toLocaleString()} EGP</strong> to:</p>
-                <p className="payment-info-highlight">Card: <strong>1234 5678 9012 3456</strong></p>
+                <p>Please send <strong>{(getCartTotal() - promoDiscount + shippingFee).toLocaleString()} EGP</strong> via InstaPay.</p>
+                <p className="payment-info-highlight">Contact us for payment details</p>
               </div>
             )}
             
@@ -388,10 +542,11 @@ function Checkout() {
                             name="promoCode"
                             value={formData.promoCode}
                             onChange={handleChange}
-                            className="form-input promo-input"
+                            className={`form-input promo-input ${errors.promoCode ? 'error' : validatedPromoCode ? 'valid' : ''}`}
                             placeholder="Enter your promo code"
+                            style={{ textTransform: 'uppercase' }}
                           />
-                          {formData.promoCode && (
+                          {validatedPromoCode && (
                             <div className="promo-success-animation">
                               <svg className="promo-checkmark" viewBox="0 0 52 52">
                                 <circle className="promo-checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
@@ -400,10 +555,19 @@ function Checkout() {
                             </div>
                           )}
                         </div>
-                        {formData.promoCode && (
-                          <p className="promo-info">
+                        {validatedPromoCode && (
+                          <p className="promo-info success">
                             <span className="promo-spark">✨</span> 
-                            Promo code will be verified at checkout
+                            Promo code applied! You save {promoDiscount.toLocaleString()} EGP
+                          </p>
+                        )}
+                        {errors.promoCode && (
+                          <span className="error-message">{errors.promoCode}</span>
+                        )}
+                        {formData.promoCode && !validatedPromoCode && !errors.promoCode && (
+                          <p className="promo-info">
+                            <span className="promo-spark">⏳</span> 
+                            Validating promo code...
                           </p>
                         )}
                       </div>
@@ -459,8 +623,8 @@ function Checkout() {
                     <div className="payment-icon">🏦</div>
                     <div className="payment-details">
                       <h4>InstaPay</h4>
-                      <p>Send <strong>{getCartTotal().toLocaleString()} EGP</strong> to card: <strong className="payment-card">1234 5678 9012 3456</strong></p>
-                      <p className="payment-note">Replace with your actual InstaPay card number</p>
+                      <p>Send <strong>{getCartTotal().toLocaleString()} EGP</strong> via InstaPay</p>
+                      <p className="payment-note">Contact us for payment details</p>
                     </div>
                   </div>
                 </label>
@@ -471,9 +635,9 @@ function Checkout() {
             <button 
               type="submit" 
               className="btn-place-order"
-              disabled={isSubmitting}
+              disabled={isSubmitting || loadingShipping}
             >
-              {isSubmitting ? 'Processing Order...' : `Place Order - ${getCartTotal().toLocaleString()} EGP`}
+              {isSubmitting ? 'Processing Order...' : `Place Order - ${(getCartTotal() - promoDiscount + shippingFee).toLocaleString()} EGP`}
             </button>
           </form>
 
@@ -491,7 +655,17 @@ function Checkout() {
                     </div>
                   </div>
                   <span className="summary-item-price">
-                    {(parseFloat(item.price.replace(/[,\sEGP]/g, '')) * item.quantity).toLocaleString()} EGP
+                    {(() => {
+                      let price
+                      if (typeof item.price === 'number') {
+                        price = item.price
+                      } else if (typeof item.price === 'string') {
+                        price = parseFloat(item.price.replace(/[,\sEGP]/g, '')) || 0
+                      } else {
+                        price = 0
+                      }
+                      return (price * item.quantity).toLocaleString()
+                    })()} EGP
                   </span>
                 </div>
               ))}
@@ -499,13 +673,38 @@ function Checkout() {
 
             <div className="summary-divider"></div>
 
+            <div className="summary-divider"></div>
+
+            <div className="summary-row">
+              <span>Subtotal:</span>
+              <span>{getCartTotal().toLocaleString()} EGP</span>
+            </div>
+
+            {promoDiscount > 0 && (
+              <div className="summary-row discount">
+                <span>Promo Discount ({formData.promoCode}):</span>
+                <span>-{promoDiscount.toLocaleString()} EGP</span>
+              </div>
+            )}
+
+            <div className="summary-row">
+              <span>Shipping:</span>
+              <span>
+                {loadingShipping ? 'Calculating...' : `${shippingFee.toLocaleString()} EGP`}
+              </span>
+            </div>
+
+            <div className="summary-divider"></div>
+
             <div className="summary-total">
               <span>Total</span>
-              <span className="total-amount">{getCartTotal().toLocaleString()} EGP</span>
+              <span className="total-amount">
+                {(getCartTotal() - promoDiscount + shippingFee).toLocaleString()} EGP
+              </span>
             </div>
 
             <div className="summary-note">
-              <p>Delivery fees will be calculated based on your location</p>
+              <p>Delivery fees calculated based on your governorate</p>
             </div>
           </div>
         </div>

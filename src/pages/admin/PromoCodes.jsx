@@ -8,6 +8,7 @@ import {
   HiCheckCircle,
   HiXCircle
 } from 'react-icons/hi'
+import { promoCodesAPI } from '../../services/api'
 import './PromoCodes.css'
 
 function PromoCodes() {
@@ -31,15 +32,21 @@ function PromoCodes() {
 
   const fetchPromoCodes = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/admin/promo-codes')
-      // const data = await response.json()
-      // setPromoCodes(data)
-      
-      // For now, set empty array
-      setPromoCodes([])
+      const data = await promoCodesAPI.getAll()
+      setPromoCodes(data.map(code => ({
+        id: code._id,
+        code: code.code,
+        discountType: code.discountType,
+        discountValue: code.discountValue,
+        minOrderValue: code.minOrderValue,
+        maxUsage: code.maxUsage,
+        currentUsage: code.currentUsage || 0,
+        expiryDate: code.expiryDate,
+        active: code.active,
+        createdAt: code.createdAt
+      })))
     } catch (error) {
-      console.error('Error fetching promo codes:', error)
+      setPromoCodes([])
     }
   }
 
@@ -86,38 +93,51 @@ function PromoCodes() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
+    try {
     const codeData = {
-      ...formData,
       code: formData.code.toUpperCase(),
+        discountType: formData.discountType,
       discountValue: parseFloat(formData.discountValue),
       minOrderValue: parseFloat(formData.minOrderValue),
       maxUsage: parseInt(formData.maxUsage),
-      id: editingCode ? editingCode.id : Date.now(),
-      createdAt: editingCode ? editingCode.createdAt : new Date().toISOString().split('T')[0]
+        expiryDate: formData.expiryDate,
+        active: formData.active
     }
 
     if (editingCode) {
-      setPromoCodes(promoCodes.map(code => code.id === editingCode.id ? codeData : code))
+        await promoCodesAPI.update(editingCode.id, codeData)
     } else {
-      setPromoCodes([...promoCodes, codeData])
+        await promoCodesAPI.create(codeData)
     }
 
+      await fetchPromoCodes()
     closeModal()
-  }
-
-  const handleDelete = (codeId) => {
-    if (window.confirm('Are you sure you want to delete this promo code?')) {
-      setPromoCodes(promoCodes.filter(code => code.id !== codeId))
+    } catch (error) {
+      alert(error.message || 'Failed to save promo code. Please try again.')
     }
   }
 
-  const toggleActive = (codeId) => {
-    setPromoCodes(promoCodes.map(code =>
-      code.id === codeId ? { ...code, active: !code.active } : code
-    ))
+  const handleDelete = async (codeId) => {
+    if (window.confirm('Are you sure you want to delete this promo code? This action cannot be undone.')) {
+      try {
+        await promoCodesAPI.delete(codeId)
+        await fetchPromoCodes()
+      } catch (error) {
+        alert(error.message || 'Failed to delete promo code. Please try again.')
+      }
+    }
+  }
+
+  const toggleActive = async (codeId) => {
+    try {
+      await promoCodesAPI.toggleActive(codeId)
+      await fetchPromoCodes()
+    } catch (error) {
+      alert(error.message || 'Failed to update promo code status. Please try again.')
+    }
   }
 
   const isExpired = (expiryDate) => {
@@ -235,7 +255,7 @@ function PromoCodes() {
                     <div className="detail-item">
                       <span className="detail-label">Expires:</span>
                       <span className={`detail-value ${isExpired(code.expiryDate) ? 'expired' : ''}`}>
-                        {new Date(code.expiryDate).toLocaleDateString()}
+                      {code.expiryDate ? new Date(code.expiryDate).toLocaleDateString() : 'N/A'}
                       </span>
                     </div>
                   </div>

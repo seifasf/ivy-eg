@@ -3,10 +3,8 @@ import emailjs from '@emailjs/browser'
 /*
  * EMAIL SETUP INSTRUCTIONS:
  * 
- * Email: ivyforhelp@gmail.com
- * 
  * 1. Create a free account at https://www.emailjs.com/
- * 2. Add Gmail service with ivyforhelp@gmail.com
+ * 2. Add Gmail service with your store email (configured in Admin Settings)
  * 3. Create an email template with these variables:
  *    - {{customer_name}}
  *    - {{customer_email}}
@@ -21,15 +19,48 @@ import emailjs from '@emailjs/browser'
  * 4. Replace the values below with your EmailJS credentials
  */
 
-// EmailJS Configuration
-const EMAILJS_CONFIG = {
-  serviceId: 'YOUR_SERVICE_ID',        // Replace with your EmailJS Service ID
-  templateId: 'YOUR_TEMPLATE_ID',      // Replace with your EmailJS Template ID
-  publicKey: 'YOUR_PUBLIC_KEY'         // Replace with your EmailJS Public Key
+// EmailJS Configuration - Will be loaded from database
+let EMAILJS_CONFIG = {
+  serviceId: '',        
+  templateId: '',      
+  publicKey: ''         
 }
 
-// Initialize EmailJS
-emailjs.init(EMAILJS_CONFIG.publicKey)
+// Load EmailJS config from localStorage or use defaults
+const loadEmailConfig = () => {
+  try {
+    const saved = localStorage.getItem('emailSettings')
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      EMAILJS_CONFIG = {
+        serviceId: parsed.serviceId || '',
+        templateId: parsed.templateId || '',
+        publicKey: parsed.publicKey || ''
+      }
+      if (EMAILJS_CONFIG.publicKey) {
+        emailjs.init(EMAILJS_CONFIG.publicKey)
+      }
+    }
+  } catch (error) {
+    console.error('Error loading email config:', error)
+  }
+}
+
+// Initialize on load
+loadEmailConfig()
+
+// Function to update config (called when settings are saved)
+export const updateEmailConfig = (config) => {
+  EMAILJS_CONFIG = {
+    serviceId: config.serviceId || '',
+    templateId: config.templateId || '',
+    publicKey: config.publicKey || ''
+  }
+  if (EMAILJS_CONFIG.publicKey) {
+    emailjs.init(EMAILJS_CONFIG.publicKey)
+  }
+  localStorage.setItem('emailSettings', JSON.stringify(EMAILJS_CONFIG))
+}
 
 /**
  * Send order confirmation email to customer
@@ -108,9 +139,8 @@ export const sendOrderConfirmation = async (orderData) => {
  * We'll contact you shortly to confirm delivery details.
  * 
  * CONTACT US:
- * If you have any questions, please don't hesitate to reach out:
- * Email: ivyforhelp@gmail.com
- * Phone: +20 (10) 1234-5678
+ * If you have any questions, please don't hesitate to reach out.
+ * Contact information is available on our website.
  * 
  * Thank you for choosing IVY!
  * 

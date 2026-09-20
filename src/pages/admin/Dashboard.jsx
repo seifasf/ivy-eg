@@ -9,10 +9,11 @@ import {
   HiTruck,
   HiCheckCircle
 } from 'react-icons/hi'
+import { dashboardAPI, governorateShippingAPI } from '../../services/api'
+import { StatsSkeleton } from '../../components/LoadingSkeleton'
 import './Dashboard.css'
 
 function Dashboard() {
-  // Mock data - replace with actual API calls
   const [stats, setStats] = useState({
     totalOrders: 0,
     pendingOrders: 0,
@@ -23,36 +24,7 @@ function Dashboard() {
   })
 
   const [recentOrders, setRecentOrders] = useState([])
-  
-  const [shippingFees, setShippingFees] = useState({
-    Cairo: 50,
-    Giza: 50,
-    Alexandria: 75,
-    'Qalyubia': 60,
-    'Sharqia': 70,
-    'Dakahlia': 80,
-    'Beheira': 80,
-    'Gharbia': 75,
-    'Monufia': 70,
-    'Kafr El Sheikh': 80,
-    'Damietta': 85,
-    'Port Said': 90,
-    'Ismailia': 85,
-    'Suez': 85,
-    'North Sinai': 120,
-    'South Sinai': 120,
-    'Minya': 90,
-    'Asyut': 100,
-    'Sohag': 110,
-    'Qena': 115,
-    'Luxor': 120,
-    'Aswan': 130,
-    'Red Sea': 130,
-    'New Valley': 140,
-    'Matrouh': 130,
-    'Fayoum': 70,
-    'Beni Suef': 75
-  })
+  const [shippingFees, setShippingFees] = useState({})
 
   const [editingGov, setEditingGov] = useState(null)
   const [tempFee, setTempFee] = useState('')
@@ -64,16 +36,39 @@ function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      // TODO: Replace with actual API calls
-      // const statsResponse = await fetch('/api/admin/stats')
-      // const statsData = await statsResponse.json()
-      // setStats(statsData)
+      // Fetch dashboard stats
+      const statsData = await dashboardAPI.getStats()
+      setStats({
+        totalOrders: statsData.totalOrders || 0,
+        pendingOrders: statsData.pendingOrders || 0,
+        totalRevenue: statsData.totalRevenue || 0,
+        totalProducts: statsData.totalProducts || 0,
+        activePromoCodes: statsData.activePromoCodes || 0,
+        totalCustomers: statsData.totalCustomers || 0
+      })
       
-      // const ordersResponse = await fetch('/api/admin/recent-orders')
-      // const ordersData = await ordersResponse.json()
-      // setRecentOrders(ordersData)
+      // Fetch recent orders
+      const ordersData = await dashboardAPI.getRecentOrders(5)
+      setRecentOrders(ordersData.map(order => ({
+        id: order._id,
+        customer: order.userInfo?.name || 'N/A',
+        items: order.items?.length || 0,
+        total: order.total || 0,
+        status: order.status || 'pending',
+        date: new Date(order.createdAt).toLocaleDateString()
+      })))
       
-      // For now, set empty data
+      // Fetch shipping fees
+      const shippingData = await governorateShippingAPI.getAll()
+      const feesObj = {}
+      if (Array.isArray(shippingData)) {
+        shippingData.forEach(item => {
+          feesObj[item.governorate] = item.shippingFee
+        })
+      }
+      setShippingFees(feesObj)
+    } catch (error) {
+      // Set defaults on error
       setStats({
         totalOrders: 0,
         pendingOrders: 0,
@@ -83,8 +78,8 @@ function Dashboard() {
         totalCustomers: 0
       })
       setRecentOrders([])
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error)
+      setShippingFees({})
+      alert(`Failed to load dashboard data: ${error.message}`)
     }
   }
 
@@ -104,7 +99,7 @@ function Dashboard() {
     setTempFee(shippingFees[governorate].toString())
   }
 
-  const handleSaveShipping = (governorate) => {
+  const handleSaveShipping = async (governorate) => {
     const newFee = parseInt(tempFee) || 0
     setShippingFees(prev => ({
       ...prev,
@@ -113,15 +108,15 @@ function Dashboard() {
     setEditingGov(null)
     setTempFee('')
     
-    // Show save message
+    try {
+      // Save to backend
+      await governorateShippingAPI.update(governorate, newFee)
+      setSaveMessage(true)
+      setTimeout(() => setSaveMessage(false), 2000)
+    } catch (error) {
     setSaveMessage(true)
     setTimeout(() => setSaveMessage(false), 2000)
-    
-    // TODO: Save to backend
-    localStorage.setItem('shippingFees', JSON.stringify({
-      ...shippingFees,
-      [governorate]: newFee
-    }))
+    }
   }
 
   const handleCancelEdit = () => {
@@ -146,8 +141,7 @@ function Dashboard() {
             <p className="stat-label">Total Orders</p>
             <h3 className="stat-value">{stats.totalOrders}</h3>
             <p className="stat-trend">
-              <HiTrendingUp size={14} />
-              <span>+12% from last month</span>
+              <span>All time orders</span>
             </p>
           </div>
         </div>
@@ -173,8 +167,7 @@ function Dashboard() {
             <p className="stat-label">Total Revenue</p>
             <h3 className="stat-value">{stats.totalRevenue.toLocaleString()} EGP</h3>
             <p className="stat-trend">
-              <HiTrendingUp size={14} />
-              <span>+18% from last month</span>
+              <span>Total revenue from delivered orders</span>
             </p>
           </div>
         </div>
@@ -187,7 +180,7 @@ function Dashboard() {
             <p className="stat-label">Total Products</p>
             <h3 className="stat-value">{stats.totalProducts}</h3>
             <p className="stat-trend">
-              <span>Coming soon</span>
+              <span>Total products in catalog</span>
             </p>
           </div>
         </div>
@@ -213,8 +206,7 @@ function Dashboard() {
             <p className="stat-label">Total Customers</p>
             <h3 className="stat-value">{stats.totalCustomers}</h3>
             <p className="stat-trend">
-              <HiTrendingUp size={14} />
-              <span>+8% from last month</span>
+              <span>Unique customers</span>
             </p>
           </div>
         </div>

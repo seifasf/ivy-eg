@@ -1,12 +1,28 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { HiArrowRight, HiMail } from 'react-icons/hi'
 import { FaInstagram, FaTiktok } from 'react-icons/fa'
 import { BiLink } from 'react-icons/bi'
+import { settingsAPI } from '../services/api'
 import './Home.css'
 
 function Home() {
   const navigate = useNavigate()
+  const [storeEmail, setStoreEmail] = useState('')
+
+  useEffect(() => {
+    const loadStoreEmail = async () => {
+      try {
+        const storeSettings = await settingsAPI.getByType('store')
+        if (storeSettings && storeSettings.data && storeSettings.data.email) {
+          setStoreEmail(storeSettings.data.email)
+        }
+      } catch (error) {
+        console.error('Error loading store email:', error)
+      }
+    }
+    loadStoreEmail()
+  }, [])
 
   return (
     <div className="home">
@@ -44,10 +60,12 @@ function Home() {
           </p>
           
           <div className="contact-info-box">
-            <div className="contact-email">
-              <HiMail size={24} />
-              <a href="mailto:ivyforhelp@gmail.com">ivyforhelp@gmail.com</a>
-            </div>
+            {storeEmail && (
+              <div className="contact-email">
+                <HiMail size={24} />
+                <a href={`mailto:${storeEmail}`}>{storeEmail}</a>
+              </div>
+            )}
             
             <div className="contact-social">
               <a 

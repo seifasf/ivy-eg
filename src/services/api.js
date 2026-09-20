@@ -1,35 +1,94 @@
 // API Service - Centralized API calls for IVY E-commerce
-// Backend URL - Update this to match your backend server
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
+import { getCached, setCached, clearCache } from '../utils/cache'
 
-// Helper function for API calls
-const apiCall = async (endpoint, options = {}) => {
-  const token = localStorage.getItem('adminToken')
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
+const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'
+
+// Helper to get image URL
+export const getImageUrl = (imagePath) => {
+  if (!imagePath) return ''
+  if (imagePath.startsWith('http')) return imagePath
+  return `${BACKEND_BASE_URL}/uploads/${imagePath}`
+}
+
+// Helper function for API calls with caching
+const apiCall = async (endpoint, options = {}, useCache = false) => {
+  // Try user token first, then admin token
+  const token = localStorage.getItem('userToken') || localStorage.getItem('adminToken')
   
   const defaultHeaders = {
     'Content-Type': 'application/json',
     ...(token && { 'Authorization': `Bearer ${token}` })
   }
 
+  // Check cache for GET requests (only if cache is enabled)
+  const cacheKey = `${endpoint}_${JSON.stringify(options)}`
+  if (useCache && (options.method === undefined || options.method === 'GET')) {
+    const cached = getCached(cacheKey)
+    if (cached) {
+      return cached
+    }
+  }
+
+  const fullUrl = `${API_BASE_URL}${endpoint}`
+
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout (increased for slow connections)
+    
+    const response = await fetch(fullUrl, {
       ...options,
+      signal: controller.signal,
       headers: {
         ...defaultHeaders,
         ...options.headers
       }
     })
 
+    clearTimeout(timeoutId)
+
+    const responseStatus = response.status
+    const responseStatusText = response.statusText
+
+    // Try to get response text first to see what we're getting
+    const responseText = await response.text()
+
     if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`)
+      try {
+        const errorData = JSON.parse(responseText)
+        throw new Error(errorData.message || `API Error: ${responseStatusText}`)
+      } catch (e) {
+        throw new Error(`API Error: ${responseStatusText} - ${responseText.substring(0, 100)}`)
+      }
     }
 
-    return await response.json()
+    let data
+    try {
+      data = JSON.parse(responseText)
+    } catch (e) {
+      throw new Error('Invalid JSON response from server')
+    }
+    
+    // Cache GET requests
+    if (useCache && (options.method === undefined || options.method === 'GET')) {
+      setCached(cacheKey, data)
+    }
+    
+    return data
   } catch (error) {
-    console.error('API call failed:', error)
+    if (error.name === 'AbortError') {
+      throw new Error('Request timeout. Please check your connection and try again.')
+    }
+    // Re-throw with better error message
+    if (error.message) {
     throw error
+    }
+    throw new Error('Network error. Please check your connection and try again.')
   }
 }
+
+// Export cache utilities
+export { clearCache }
 
 // Authentication APIs
 export const authAPI = {
@@ -54,10 +113,20 @@ export const authAPI = {
   })
 }
 
-// Dashboard APIs
+// User APIs (Public users)
+export const userAPI = {
+  googleAuth: (googleData) => apiCall('/users/google-auth', {
+    method: 'POST',
+    body: JSON.stringify(googleData)
+  }),
+  
+  getMyOrders: () => apiCall('/users/orders/my-orders')
+}
+
+// Dashboard APIs (with caching)
 export const dashboardAPI = {
-  getStats: () => apiCall('/dashboard/stats'),
-  getRecentOrders: (limit = 5) => apiCall(`/dashboard/recent-orders?limit=${limit}`)
+  getStats: () => apiCall('/dashboard/stats', {}, true),
+  getRecentOrders: (limit = 5) => apiCall(`/dashboard/recent-orders?limit=${limit}`, {}, true)
 }
 
 // Orders APIs (Checkout endpoints)
@@ -142,10 +211,14 @@ export const promoCodesAPI = {
   })
 }
 
-// Governorate Shipping APIs
+// Governorate Shipping APIs (with caching)
 export const governorateShippingAPI = {
-  getAll: () => apiCall('/governorate-shipping'),
-  getByGovernorate: (governorate) => apiCall(`/governorate-shipping/${governorate}`),
+  getAll: () => apiCall('/governorate-shipping', {}, true),
+  getByGovernorate: (governorate) => {
+    // URL encode to handle spaces and special characters
+    const encoded = encodeURIComponent(governorate)
+    return apiCall(`/governorate-shipping/${encoded}`, {}, true)
+  },
   initialize: () => apiCall('/governorate-shipping/initialize', {
     method: 'POST'
   }),
@@ -159,20 +232,20 @@ export const governorateShippingAPI = {
   })
 }
 
-// Settings/Business APIs (if exists in backend)
+// Settings APIs
 export const settingsAPI = {
-  // TODO: Implement when business endpoints are ready
-  getStore: () => apiCall('/business'),
-  updateStore: (storeData) => apiCall('/business', {
+  getAll: () => apiCall('/settings'),
+  getByType: (type) => apiCall(`/settings/${type}`),
+  update: (type, data) => apiCall(`/settings/${type}`, {
     method: 'PUT',
-    body: JSON.stringify(storeData)
+    body: JSON.stringify({ data })
   })
 }
 
-// Public Products API (for frontend)
+// Public Products API (for frontend - with caching)
 export const publicProductsAPI = {
-  getAll: () => apiCall('/products'),
-  getById: (id) => apiCall(`/products/${id}`)
+  getAll: () => apiCall('/products', {}, true), // Enable caching
+  getById: (id) => apiCall(`/products/${id}`, {}, true) // Enable caching
 }
 
 // Public Checkout API (for frontend)
