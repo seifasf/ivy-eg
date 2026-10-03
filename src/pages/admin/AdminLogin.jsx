@@ -110,11 +110,6 @@ function AdminLogin() {
             <p className="admin-login-note">
               🔒 Secure admin access only
             </p>
-            <p className="admin-login-credentials">
-              <strong>Default credentials:</strong><br />
-              Email: admin@ivy.eg<br />
-              Password: IVY@2025
-            </p>
           </div>
         </div>
       </div>
