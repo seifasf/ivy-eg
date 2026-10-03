@@ -1309,6 +1309,27 @@
   border-color: #ffffff;
 }
 
+.btn-add-to-cart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid #ffffff;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-add-to-cart:hover {
+  background: transparent;
+  color: #ffffff;
+}
+
 /* Product card details (previously only defined in the admin stylesheet) */
 .products-page .product-image-wrapper {
   position: relative;
