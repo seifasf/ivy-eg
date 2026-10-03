@@ -115,21 +115,9 @@ function Header() {
                 <div className="google-login-wrapper">
                   <GoogleLogin
                     onSuccess={async (credentialResponse) => {
-                      try {
-                        // Decode JWT to get user info
-                        const base64Url = credentialResponse.credential.split('.')[1]
-                        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-                        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
-                          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-                        }).join(''))
-                        const userData = JSON.parse(jsonPayload)
-                        
-                        const result = await login(userData)
-                        if (result.success) {
-                          // Successfully logged in
-                        }
-                      } catch (error) {
-                        alert('Failed to sign in. Please try again.')
+                      const result = await login(credentialResponse.credential)
+                      if (!result.success) {
+                        alert(result.error || 'Failed to sign in. Please try again.')
                       }
                     }}
                     onError={() => {

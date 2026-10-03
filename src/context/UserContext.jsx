@@ -34,16 +34,12 @@ export const UserProvider = ({ children }) => {
     setLoading(false)
   }, [])
 
-  const login = async (googleData) => {
+  // credential is the signed ID token from Google; the backend verifies it
+  const login = async (credential) => {
     setLoading(true)
     
     try {
-      const response = await userAPI.googleAuth({
-        googleId: googleData.sub,
-        email: googleData.email,
-        name: googleData.name,
-        picture: googleData.picture
-      })
+      const response = await userAPI.googleAuth({ credential })
       
       localStorage.setItem('userToken', response.token)
       localStorage.setItem('user', JSON.stringify(response.user))

@@ -59,6 +59,8 @@ function CartPage() {
                     <img 
                       src={item.image} 
                       alt={item.name}
+                      loading="lazy"
+                      decoding="async"
                       style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '10px' }}
                       onError={(e) => {
                         e.target.style.display = 'none'

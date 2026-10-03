@@ -57,6 +57,7 @@ function Checkout() {
   const [errors, setErrors] = useState({})
   const [emailStatus, setEmailStatus] = useState(null)
   const [shippingFee, setShippingFee] = useState(0)
+  const [placedTotal, setPlacedTotal] = useState(0)
   const [promoDiscount, setPromoDiscount] = useState(0)
   const [validatedPromoCode, setValidatedPromoCode] = useState(null)
   const [loadingShipping, setLoadingShipping] = useState(false)
@@ -132,7 +133,7 @@ function Checkout() {
         } catch (error) {
           setPromoDiscount(0)
           setValidatedPromoCode(null)
-          setErrors(prev => ({ ...prev, promoCode: 'Failed to validate promo code' }))
+          setErrors(prev => ({ ...prev, promoCode: error.message || 'Failed to validate promo code' }))
         }
       } else {
         setPromoDiscount(0)
@@ -254,25 +255,17 @@ function Checkout() {
           promoCode: validatedPromoCode || ''
         }
 
-        // Submit order to backend
+        // The server recalculates prices, shipping and discount; use its numbers
         const result = await publicCheckoutAPI.create(orderData)
-        
-        // Apply promo code if valid
-        if (validatedPromoCode) {
-          try {
-            await promoCodesAPI.apply(validatedPromoCode)
-          } catch (error) {
-            // Continue even if promo code application fails
-          }
-        }
+        const summary = result?.summary || { total: finalTotal, shippingFee, discount: promoDiscount }
 
       // Send confirmation email
         const emailResult = await sendOrderConfirmation({
           customer: formData,
           items: cartItems,
-          total: finalTotal,
-          shippingFee: shippingFee,
-          promoDiscount: promoDiscount
+          total: summary.total,
+          shippingFee: summary.shippingFee,
+          promoDiscount: summary.discount
         })
       
       if (emailResult.success) {
@@ -281,6 +274,7 @@ function Checkout() {
         setEmailStatus('failed')
       }
 
+      setPlacedTotal(summary.total)
       setOrderPlaced(true)
       clearCart()
       setIsSubmitting(false)
@@ -341,7 +335,7 @@ function Checkout() {
             )}
             
             <div className="success-details">
-              <p><strong>Order Total:</strong> {(getCartTotal() - promoDiscount + shippingFee).toLocaleString()} EGP</p>
+              <p><strong>Order Total:</strong> {placedTotal.toLocaleString()} EGP</p>
               {promoDiscount > 0 && (
                 <p><strong>Promo Discount:</strong> -{promoDiscount.toLocaleString()} EGP ({formData.promoCode})</p>
               )}
@@ -360,7 +354,7 @@ function Checkout() {
             {formData.paymentMethod === 'telda' && (
               <div className="payment-instructions">
                 <h4>📱 Telda Payment Instructions</h4>
-                <p>Please send <strong>{(getCartTotal() - promoDiscount + shippingFee).toLocaleString()} EGP</strong> to:</p>
+                <p>Please send <strong>{placedTotal.toLocaleString()} EGP</strong> to:</p>
                 <p className="payment-info-highlight">Username: <strong>ivyeg</strong></p>
               </div>
             )}
@@ -368,7 +362,7 @@ function Checkout() {
             {formData.paymentMethod === 'instapay' && (
               <div className="payment-instructions">
                 <h4>🏦 InstaPay Payment Instructions</h4>
-                <p>Please send <strong>{(getCartTotal() - promoDiscount + shippingFee).toLocaleString()} EGP</strong> via InstaPay.</p>
+                <p>Please send <strong>{placedTotal.toLocaleString()} EGP</strong> via InstaPay.</p>
                 <p className="payment-info-highlight">Contact us for payment details</p>
               </div>
             )}

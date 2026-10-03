@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { CartProvider } from './context/CartContext'
@@ -8,20 +8,23 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import Home from './pages/Home'
 import Products from './pages/Products'
-import Contact from './pages/Contact'
-import CartPage from './pages/CartPage'
-import Checkout from './pages/Checkout'
-import TrackOrders from './pages/TrackOrders'
-
-// Admin imports
 import ProtectedRoute from './components/admin/ProtectedRoute'
-import AdminLayout from './components/admin/AdminLayout'
-import AdminLogin from './pages/admin/AdminLogin'
-import Dashboard from './pages/admin/Dashboard'
-import Orders from './pages/admin/Orders'
-import AdminProducts from './pages/admin/Products'
-import PromoCodes from './pages/admin/PromoCodes'
-import Settings from './pages/admin/Settings'
+
+// Loaded on demand so shoppers don't download checkout or admin code up front
+const Contact = lazy(() => import('./pages/Contact'))
+const CartPage = lazy(() => import('./pages/CartPage'))
+const Checkout = lazy(() => import('./pages/Checkout'))
+const TrackOrders = lazy(() => import('./pages/TrackOrders'))
+const AdminLayout = lazy(() => import('./components/admin/AdminLayout'))
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'))
+const Dashboard = lazy(() => import('./pages/admin/Dashboard'))
+const Orders = lazy(() => import('./pages/admin/Orders'))
+const AdminProducts = lazy(() => import('./pages/admin/Products'))
+const PromoCodes = lazy(() => import('./pages/admin/PromoCodes'))
+const Settings = lazy(() => import('./pages/admin/Settings'))
+
+const PageFallback = () => <div className="page-loading" aria-busy="true" />
+const page = (element) => <Suspense fallback={<PageFallback />}>{element}</Suspense>
 
 import './App.css'
 
@@ -59,7 +62,7 @@ function App() {
               <div className="app">
                 <Header />
                 <main className="main-content">
-                  <Contact />
+                  {page(<Contact />)}
                 </main>
                 <Footer />
               </div>
@@ -68,7 +71,7 @@ function App() {
               <div className="app">
                 <Header />
                 <main className="main-content">
-                  <CartPage />
+                  {page(<CartPage />)}
                 </main>
                 <Footer />
               </div>
@@ -77,7 +80,7 @@ function App() {
               <div className="app">
                 <Header />
                 <main className="main-content">
-                  <Checkout />
+                  {page(<Checkout />)}
                 </main>
                 <Footer />
               </div>
@@ -86,24 +89,24 @@ function App() {
               <div className="app">
                 <Header />
                 <main className="main-content">
-                  <TrackOrders />
+                  {page(<TrackOrders />)}
                 </main>
                 <Footer />
               </div>
             } />
 
             {/* Admin Routes (No Header/Footer) */}
-            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/login" element={page(<AdminLogin />)} />
             <Route path="/admin" element={
               <ProtectedRoute>
-                <AdminLayout />
+                {page(<AdminLayout />)}
               </ProtectedRoute>
             }>
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="orders" element={<Orders />} />
-              <Route path="products" element={<AdminProducts />} />
-              <Route path="promocodes" element={<PromoCodes />} />
-              <Route path="settings" element={<Settings />} />
+              <Route path="dashboard" element={page(<Dashboard />)} />
+              <Route path="orders" element={page(<Orders />)} />
+              <Route path="products" element={page(<AdminProducts />)} />
+              <Route path="promocodes" element={page(<PromoCodes />)} />
+              <Route path="settings" element={page(<Settings />)} />
             </Route>
           </Routes>
             </CartProvider>

@@ -101,13 +101,16 @@ function Orders() {
       alert('Shipping fee cannot be negative')
       return
     }
+    const current = orders.find(order => order.id === orderId)
+    if (current && current.shippingFee === fee) return
     try {
-      await ordersAPI.updateShippingFee(orderId, fee)
-    setOrders(orders.map(order =>
-      order.id === orderId ? { ...order, shippingFee: fee } : order
-    ))
-    if (selectedOrder?.id === orderId) {
-      setSelectedOrder({ ...selectedOrder, shippingFee: fee })
+      const result = await ordersAPI.updateShippingFee(orderId, fee)
+      const total = result?.order?.total ?? (current ? current.total - current.shippingFee + fee : 0)
+      setOrders(orders.map(order =>
+        order.id === orderId ? { ...order, shippingFee: fee, total } : order
+      ))
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder({ ...selectedOrder, shippingFee: fee, total })
       }
     } catch (error) {
       console.error('Error updating shipping fee:', error)
@@ -196,7 +199,7 @@ function Orders() {
                 </div>
                 <div className="order-info-item">
                   <span className="label">Total:</span>
-                  <span className="value strong">{(order.total + order.shippingFee).toLocaleString()} EGP</span>
+                  <span className="value strong">{order.total.toLocaleString()} EGP</span>
                 </div>
                 <div className="order-info-item">
                   <span className="label">Date:</span>
@@ -305,8 +308,10 @@ function Orders() {
                   </label>
                   <input
                     type="number"
-                    value={selectedOrder.shippingFee}
-                    onChange={(e) => handleShippingFeeUpdate(selectedOrder.id, e.target.value)}
+                    key={selectedOrder.id}
+                    defaultValue={selectedOrder.shippingFee}
+                    onBlur={(e) => handleShippingFeeUpdate(selectedOrder.id, e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
                     min="0"
                     className="shipping-fee-input"
                   />
@@ -318,7 +323,7 @@ function Orders() {
                 <div className="order-summary">
                   <div className="summary-row">
                     <span>Subtotal:</span>
-                    <span>{selectedOrder.total.toLocaleString()} EGP</span>
+                    <span>{(selectedOrder.total - selectedOrder.shippingFee).toLocaleString()} EGP</span>
                   </div>
                   <div className="summary-row">
                     <span>Shipping:</span>
@@ -326,7 +331,7 @@ function Orders() {
                   </div>
                   <div className="summary-row total">
                     <span>Total:</span>
-                    <span>{(selectedOrder.total + selectedOrder.shippingFee).toLocaleString()} EGP</span>
+                    <span>{selectedOrder.total.toLocaleString()} EGP</span>
                   </div>
                 </div>
               </div>

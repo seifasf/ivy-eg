@@ -20,7 +20,7 @@ function Contact() {
   useEffect(() => {
     const loadStoreEmail = async () => {
       try {
-        const storeSettings = await settingsAPI.getByType('store')
+        const storeSettings = await settingsAPI.getStore()
         if (storeSettings && storeSettings.data && storeSettings.data.email) {
           setStoreEmail(storeSettings.data.email)
         }

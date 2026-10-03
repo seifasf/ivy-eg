@@ -11,80 +11,139 @@ export const getImageUrl = (imagePath) => {
   return `${BACKEND_BASE_URL}/uploads/${imagePath}`
 }
 
-// Helper function for API calls with caching
-const apiCall = async (endpoint, options = {}, useCache = false) => {
-  // Try user token first, then admin token
-  const token = localStorage.getItem('userToken') || localStorage.getItem('adminToken')
-  
-  const defaultHeaders = {
-    'Content-Type': 'application/json',
-    ...(token && { 'Authorization': `Bearer ${token}` })
-  }
+// The free backend sleeps when idle and needs up to a minute to wake up,
+// so reads retry on network errors and gateway errors instead of failing.
+const REQUEST_TIMEOUT_MS = 25000
+const WRITE_TIMEOUT_MS = 60000
+const RETRY_DELAYS_MS = [1500, 4000, 8000]
+const RETRYABLE_STATUS = new Set([502, 503, 504])
 
-  // Check cache for GET requests (only if cache is enabled)
-  const cacheKey = `${endpoint}_${JSON.stringify(options)}`
-  if (useCache && (options.method === undefined || options.method === 'GET')) {
-    const cached = getCached(cacheKey)
-    if (cached) {
-      return cached
-    }
-  }
+const CACHE_MAX_AGE = {
+  memory: 60 * 1000,
+  swr: 2 * 60 * 1000
+}
 
-  const fullUrl = `${API_BASE_URL}${endpoint}`
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
+// Admin pages act as the admin even if a shopper account is also signed in
+const getAuthToken = () => {
+  const onAdminPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
+  const adminToken = localStorage.getItem('adminToken')
+  const userToken = localStorage.getItem('userToken')
+  return onAdminPage ? adminToken || userToken : userToken || adminToken
+}
+
+const parseError = (status, statusText, text) => {
+  let message = `Request failed (${status} ${statusText})`
   try {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout (increased for slow connections)
-    
-    const response = await fetch(fullUrl, {
-      ...options,
-      signal: controller.signal,
-      headers: {
-        ...defaultHeaders,
-        ...options.headers
-      }
-    })
-
-    clearTimeout(timeoutId)
-
-    const responseStatus = response.status
-    const responseStatusText = response.statusText
-
-    // Try to get response text first to see what we're getting
-    const responseText = await response.text()
-
-    if (!response.ok) {
-      try {
-        const errorData = JSON.parse(responseText)
-        throw new Error(errorData.message || `API Error: ${responseStatusText}`)
-      } catch (e) {
-        throw new Error(`API Error: ${responseStatusText} - ${responseText.substring(0, 100)}`)
-      }
-    }
-
-    let data
-    try {
-      data = JSON.parse(responseText)
-    } catch (e) {
-      throw new Error('Invalid JSON response from server')
-    }
-    
-    // Cache GET requests
-    if (useCache && (options.method === undefined || options.method === 'GET')) {
-      setCached(cacheKey, data)
-    }
-    
-    return data
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      throw new Error('Request timeout. Please check your connection and try again.')
-    }
-    // Re-throw with better error message
-    if (error.message) {
-    throw error
-    }
-    throw new Error('Network error. Please check your connection and try again.')
+    const data = JSON.parse(text)
+    message = data.message || data.errors?.[0]?.msg || message
+  } catch {
+    // Not JSON (e.g. a proxy error page); keep the generic message
   }
+  const error = new Error(message)
+  error.status = status
+  return error
+}
+
+const request = async (endpoint, options, isRead) => {
+  const token = getAuthToken()
+  const isFormData = options.body instanceof FormData
+  const attempts = isRead ? RETRY_DELAYS_MS.length + 1 : 1
+
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      isRead ? REQUEST_TIMEOUT_MS : WRITE_TIMEOUT_MS
+    )
+    const isLastAttempt = attempt === attempts - 1
+
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        signal: controller.signal,
+        headers: {
+          ...(!isFormData && { 'Content-Type': 'application/json' }),
+          ...(token && { Authorization: `Bearer ${token}` }),
+          ...options.headers
+        }
+      })
+      const text = await response.text()
+
+      if (!response.ok) {
+        if (RETRYABLE_STATUS.has(response.status) && !isLastAttempt) {
+          await sleep(RETRY_DELAYS_MS[attempt])
+          continue
+        }
+        throw parseError(response.status, response.statusText, text)
+      }
+
+      try {
+        return text ? JSON.parse(text) : null
+      } catch {
+        throw new Error('Invalid response from server')
+      }
+    } catch (error) {
+      if (error.status || error.message === 'Invalid response from server') throw error
+      if (!isLastAttempt) {
+        await sleep(RETRY_DELAYS_MS[attempt])
+        continue
+      }
+      if (error.name === 'AbortError') {
+        throw new Error('The server is taking too long to respond. Please try again.')
+      }
+      throw new Error('Network error. Please check your connection and try again.')
+    } finally {
+      clearTimeout(timeoutId)
+    }
+  }
+}
+
+const inflight = new Map()
+
+// cacheMode: false (no cache), true (short in-memory cache) or
+// 'swr' (persisted; stale data is returned at once and refreshed in the background)
+const apiCall = async (endpoint, options = {}, cacheMode = false) => {
+  const isRead = !options.method || options.method === 'GET'
+
+  if (!isRead) {
+    const result = await request(endpoint, options, false)
+    clearCache(endpoint.split('?')[0].split('/').slice(0, 2).join('/'))
+    clearCache('/dashboard')
+    return result
+  }
+
+  if (!cacheMode) return request(endpoint, options, true)
+
+  const persist = cacheMode === 'swr'
+  const maxAge = persist ? CACHE_MAX_AGE.swr : CACHE_MAX_AGE.memory
+  const cached = getCached(endpoint, maxAge)
+
+  const load = () => {
+    if (!inflight.has(endpoint)) {
+      const promise = request(endpoint, options, true)
+        .then((data) => {
+          setCached(endpoint, data, persist)
+          return data
+        })
+        .finally(() => inflight.delete(endpoint))
+      inflight.set(endpoint, promise)
+    }
+    return inflight.get(endpoint)
+  }
+
+  if (cached?.fresh) return cached.data
+  if (cached && persist) {
+    load().catch(() => {})
+    return cached.data
+  }
+  return load()
+}
+
+// Wakes the backend early so the first real request doesn't wait for a cold start
+export const warmUpBackend = () => {
+  fetch(`${API_BASE_URL}/health`, { method: 'GET', cache: 'no-store' }).catch(() => {})
 }
 
 // Export cache utilities
@@ -152,32 +211,16 @@ export const productsAPI = {
   getById: (id) => apiCall(`/products/${id}`),
   
   // Admin-only endpoints (with multipart/form-data for images)
-  create: async (formData) => {
-    const token = localStorage.getItem('adminToken')
-    const response = await fetch(`${API_BASE_URL}/products`, {
-      method: 'POST',
-      headers: {
-        ...(token && { 'Authorization': `Bearer ${token}` })
-      },
-      body: formData // FormData for file upload
-    })
-    if (!response.ok) throw new Error(`API Error: ${response.statusText}`)
-    return await response.json()
-  },
-  
-  update: async (id, formData) => {
-    const token = localStorage.getItem('adminToken')
-    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
-      method: 'PUT',
-      headers: {
-        ...(token && { 'Authorization': `Bearer ${token}` })
-      },
-      body: formData // FormData for file upload
-    })
-    if (!response.ok) throw new Error(`API Error: ${response.statusText}`)
-    return await response.json()
-  },
-  
+  create: (formData) => apiCall('/products', {
+    method: 'POST',
+    body: formData
+  }),
+
+  update: (id, formData) => apiCall(`/products/${id}`, {
+    method: 'PUT',
+    body: formData
+  }),
+
   delete: (id) => apiCall(`/products/${id}`, {
     method: 'DELETE'
   })
@@ -204,20 +247,16 @@ export const promoCodesAPI = {
   validate: (code, orderTotal) => apiCall('/promocodes/validate', {
     method: 'POST',
     body: JSON.stringify({ code, orderTotal })
-  }),
-  apply: (code) => apiCall('/promocodes/apply', {
-    method: 'POST',
-    body: JSON.stringify({ code })
   })
 }
 
 // Governorate Shipping APIs (with caching)
 export const governorateShippingAPI = {
-  getAll: () => apiCall('/governorate-shipping', {}, true),
+  getAll: () => apiCall('/governorate-shipping', {}, 'swr'),
   getByGovernorate: (governorate) => {
     // URL encode to handle spaces and special characters
     const encoded = encodeURIComponent(governorate)
-    return apiCall(`/governorate-shipping/${encoded}`, {}, true)
+    return apiCall(`/governorate-shipping/${encoded}`, {}, 'swr')
   },
   initialize: () => apiCall('/governorate-shipping/initialize', {
     method: 'POST'
@@ -236,6 +275,7 @@ export const governorateShippingAPI = {
 export const settingsAPI = {
   getAll: () => apiCall('/settings'),
   getByType: (type) => apiCall(`/settings/${type}`),
+  getStore: () => apiCall('/settings/store', {}, 'swr'),
   update: (type, data) => apiCall(`/settings/${type}`, {
     method: 'PUT',
     body: JSON.stringify({ data })
@@ -244,8 +284,8 @@ export const settingsAPI = {
 
 // Public Products API (for frontend - with caching)
 export const publicProductsAPI = {
-  getAll: () => apiCall('/products', {}, true), // Enable caching
-  getById: (id) => apiCall(`/products/${id}`, {}, true) // Enable caching
+  getAll: () => apiCall('/products', {}, 'swr'),
+  getById: (id) => apiCall(`/products/${id}`, {}, 'swr')
 }
 
 // Public Checkout API (for frontend)

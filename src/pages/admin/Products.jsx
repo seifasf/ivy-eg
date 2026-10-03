@@ -291,6 +291,8 @@ function Products() {
                   <img 
                     src={getImageUrl(product.mainImage)} 
                     alt={product.title} 
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <div className="no-image">

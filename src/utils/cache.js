@@ -1,37 +1,62 @@
-// Simple in-memory cache for API responses
+// API response cache: in memory, optionally mirrored to localStorage so repeat
+// visits render instantly while fresh data loads in the background.
 const cache = new Map()
-const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+const STORAGE_PREFIX = 'ivy-cache:'
+const MAX_STALE_AGE = 24 * 60 * 60 * 1000
 
-export const getCached = (key) => {
-  const cached = cache.get(key)
-  if (!cached) return null
-  
-  const now = Date.now()
-  if (now - cached.timestamp > CACHE_DURATION) {
-    cache.delete(key)
+const readStorage = (key) => {
+  try {
+    const raw = localStorage.getItem(STORAGE_PREFIX + key)
+    return raw ? JSON.parse(raw) : null
+  } catch {
     return null
   }
-  
-  return cached.data
 }
 
-export const setCached = (key, data) => {
-  cache.set(key, {
-    data,
-    timestamp: Date.now()
-  })
-}
-
-export const clearCache = (pattern) => {
-  if (!pattern) {
-    cache.clear()
-    return
+const getEntry = (key) => {
+  let entry = cache.get(key)
+  if (!entry) {
+    entry = readStorage(key)
+    if (entry) cache.set(key, entry)
   }
-  
-  for (const key of cache.keys()) {
-    if (key.includes(pattern)) {
-      cache.delete(key)
+  if (!entry) return null
+  if (Date.now() - entry.timestamp > MAX_STALE_AGE) {
+    clearCache(key)
+    return null
+  }
+  return entry
+}
+
+// Returns { data, fresh } or null
+export const getCached = (key, maxAge) => {
+  const entry = getEntry(key)
+  if (!entry) return null
+  return { data: entry.data, fresh: Date.now() - entry.timestamp <= maxAge }
+}
+
+export const setCached = (key, data, persist = false) => {
+  const entry = { data, timestamp: Date.now() }
+  cache.set(key, entry)
+  if (persist) {
+    try {
+      localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(entry))
+    } catch {
+      // Storage full or disabled: the in-memory copy is enough
     }
   }
 }
 
+export const clearCache = (pattern) => {
+  for (const key of [...cache.keys()]) {
+    if (!pattern || key.includes(pattern)) cache.delete(key)
+  }
+  try {
+    for (const key of Object.keys(localStorage)) {
+      if (key.startsWith(STORAGE_PREFIX) && (!pattern || key.includes(pattern))) {
+        localStorage.removeItem(key)
+      }
+    }
+  } catch {
+    // localStorage unavailable
+  }
+}
