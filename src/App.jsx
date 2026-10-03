@@ -10,6 +10,20 @@ import Home from './pages/Home'
 import Products from './pages/Products'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 
+// Page stylesheets share global class names, so they all load up front in this
+// order; only the page JavaScript below is split out.
+import './pages/Contact.css'
+import './pages/CartPage.css'
+import './pages/Checkout.css'
+import './pages/TrackOrders.css'
+import './components/admin/AdminLayout.css'
+import './pages/admin/AdminLogin.css'
+import './pages/admin/Dashboard.css'
+import './pages/admin/Orders.css'
+import './pages/admin/Products.css'
+import './pages/admin/PromoCodes.css'
+import './pages/admin/Settings.css'
+
 // Loaded on demand so shoppers don't download checkout or admin code up front
 const Contact = lazy(() => import('./pages/Contact'))
 const CartPage = lazy(() => import('./pages/CartPage'))
