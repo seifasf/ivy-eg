@@ -1,166 +1,140 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useCart } from '../context/CartContext'
-import { publicProductsAPI, getImageUrl } from '../services/api'
-import { ProductSkeleton } from '../components/LoadingSkeleton'
-import { HiShoppingCart, HiArrowRight } from 'react-icons/hi'
-import './Products.css'
+import { useSearchParams } from 'react-router-dom'
+import { publicProductsAPI } from '../services/api'
+import ProductCard from '../components/ProductCard'
+import { effectivePrice } from '../utils/product'
+import './Shop.css'
+
+const SORTS = {
+  newest: { label: 'Newest', compare: (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0) },
+  'price-asc': { label: 'Price: low to high', compare: (a, b) => effectivePrice(a) - effectivePrice(b) },
+  'price-desc': { label: 'Price: high to low', compare: (a, b) => effectivePrice(b) - effectivePrice(a) }
+}
 
 function Products() {
-  const navigate = useNavigate()
-  const { addToCart } = useCart()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [status, setStatus] = useState('loading')
+
+  const selectedCategory = searchParams.get('category') || 'all'
+  const sort = SORTS[searchParams.get('sort')] ? searchParams.get('sort') : 'newest'
+
+  const fetchProducts = async () => {
+    setStatus('loading')
+    try {
+      const data = await publicProductsAPI.getAll()
+      setProducts(Array.isArray(data) ? data.filter(p => p.inStock) : [])
+      setStatus('ready')
+    } catch {
+      setStatus('error')
+    }
+  }
 
   useEffect(() => {
     fetchProducts()
   }, [])
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true)
-      const data = await publicProductsAPI.getAll()
-      
-      if (!data || !Array.isArray(data)) {
-        setProducts([])
-        return
-      }
-      
-      // Filter only in-stock products for public view
-      const inStockProducts = data.filter(p => p.inStock)
-      setProducts(inStockProducts)
-    } catch (error) {
-      setProducts([])
-      alert(`Failed to load products: ${error.message}`)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const categories = useMemo(() => 
-    ['all', ...new Set(products.map(p => p.category).filter(Boolean))],
+  const categories = useMemo(
+    () => ['all', ...new Set(products.map(p => p.category).filter(Boolean))],
     [products]
   )
-  
-  const filteredProducts = useMemo(() => 
-    selectedCategory === 'all' 
-      ? products 
-      : products.filter(p => p.category === selectedCategory),
-    [products, selectedCategory]
-  )
 
-  const handleAddToCart = (product) => {
-    // Calculate the final price (use discount price if available and lower)
-    const finalPrice = product.discountPrice && product.discountPrice < product.price 
-      ? product.discountPrice 
-      : product.price
-    
-    // Check if product has sizes
-    if (product.sizes && product.sizes.length > 0) {
-      // For now, add with first available size
-      // In a full implementation, you'd show a size selector
-      addToCart({
-        id: product._id,
-        name: product.title,
-        price: finalPrice,
-        image: getImageUrl(product.mainImage),
-        selectedSize: product.sizes[0]
-      })
-    } else {
-      addToCart({
-        id: product._id,
-        name: product.title,
-        price: finalPrice,
-        image: getImageUrl(product.mainImage)
-      })
-    }
+  const visibleProducts = useMemo(() => {
+    const list = selectedCategory === 'all'
+      ? products
+      : products.filter(p => p.category === selectedCategory)
+    return [...list].sort(SORTS[sort].compare)
+  }, [products, selectedCategory, sort])
+
+  const updateParam = (key, value, fallback) => {
+    const next = new URLSearchParams(searchParams)
+    if (value === fallback) next.delete(key)
+    else next.set(key, value)
+    setSearchParams(next, { replace: true })
   }
 
   return (
-    <div className="products-page">
-      <section className="products-hero">
-        <div className="products-hero-content">
-          <h1 className="products-hero-title">Our Collection</h1>
-          <p className="products-hero-subtitle">Explore our range of premium products</p>
-        </div>
-      </section>
+    <div className="shop">
+      <header className="shop-head container">
+        <p className="eyebrow">IVY · Shop</p>
+        <h1 className="display shop-title">
+          {selectedCategory === 'all' ? 'The collection' : selectedCategory}
+        </h1>
+      </header>
 
-      <div className="products-main">
-        {/* Category Filter */}
-        {categories.length > 1 && (
-          <div className="category-filter">
-            {categories.map(category => (
+      <div className="shop-toolbar-wrap">
+        <div className="shop-toolbar container">
+          <div className="shop-filters" role="tablist" aria-label="Categories">
+            {categories.length > 1 && categories.map(category => (
               <button
                 key={category}
-                className={`category-btn ${selectedCategory === category ? 'active' : ''}`}
-                onClick={() => setSelectedCategory(category)}
+                type="button"
+                role="tab"
+                aria-selected={selectedCategory === category}
+                className={`shop-chip ${selectedCategory === category ? 'is-active' : ''}`}
+                onClick={() => updateParam('category', category, 'all')}
               >
-                {category.charAt(0).toUpperCase() + category.slice(1)}
+                {category === 'all' ? 'All' : category}
               </button>
             ))}
           </div>
-        )}
+          <div className="shop-toolbar-end">
+            {status === 'ready' && (
+              <span className="shop-count">
+                {visibleProducts.length} {visibleProducts.length === 1 ? 'item' : 'items'}
+              </span>
+            )}
+            <label className="shop-sort">
+              <span className="visually-hidden">Sort by</span>
+              <select value={sort} onChange={(e) => updateParam('sort', e.target.value, 'newest')}>
+                {Object.entries(SORTS).map(([key, { label }]) => (
+                  <option key={key} value={key}>{label}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </div>
+      </div>
 
-        {/* Products Grid */}
-        {loading ? (
-          <div className="products-grid">
-            {[...Array(6)].map((_, i) => (
-              <ProductSkeleton key={i} />
-            ))}
-          </div>
-        ) : filteredProducts.length === 0 ? (
-        <div className="coming-soon-container">
-          <div className="coming-soon-icon">📦</div>
-          <h2 className="coming-soon-title">No Products Available</h2>
-            <p className="coming-soon-message">
-              {selectedCategory !== 'all' ? 'No products in this category' : 'Coming Soon'}
-            </p>
-          </div>
-        ) : (
-          <div className="products-grid">
-            {filteredProducts.map(product => (
-              <div key={product._id} className="product-card">
-                <div className="product-image-wrapper">
-                  <img 
-                    src={getImageUrl(product.mainImage)} 
-                    alt={product.title}
-                    loading="lazy"
-                    decoding="async"
-                    onError={(e) => {
-                      e.target.src = '/IMGs/IVY-03.png'
-                    }}
-                  />
-                  {product.discountPrice < product.price && (
-                    <div className="discount-badge">
-                      -{Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
-                    </div>
-                  )}
-                </div>
-                <div className="product-info">
-                  <h3 className="product-name">{product.title}</h3>
-                  <p className="product-category">{product.category}</p>
-                  <div className="product-pricing">
-                    {product.discountPrice < product.price ? (
-                      <>
-                        <span className="original-price">{product.price.toLocaleString()} EGP</span>
-                        <span className="final-price">{product.discountPrice.toLocaleString()} EGP</span>
-                      </>
-                    ) : (
-                      <span className="final-price">{product.price.toLocaleString()} EGP</span>
-                    )}
-                  </div>
-                  <button 
-                    className="btn-add-to-cart"
-                    onClick={() => handleAddToCart(product)}
-                  >
-                    <HiShoppingCart size={18} />
-                    Add to Cart
-                  </button>
-                </div>
+      <div className="container shop-body">
+        {status === 'loading' ? (
+          <div className="pcard-grid" aria-busy="true">
+            {Array.from({ length: 8 }, (_, i) => (
+              <div key={i} className="shop-skel">
+                <div className="shop-skel-media" />
+                <div className="shop-skel-line" />
+                <div className="shop-skel-line shop-skel-line--short" />
               </div>
             ))}
-        </div>
+          </div>
+        ) : status === 'error' ? (
+          <div className="shop-empty">
+            <h2 className="display shop-empty-title">Couldn't load products</h2>
+            <p>Check your connection and try again.</p>
+            <button type="button" className="btn btn--primary" onClick={fetchProducts}>Try again</button>
+          </div>
+        ) : visibleProducts.length === 0 ? (
+          <div className="shop-empty">
+            <h2 className="display shop-empty-title">
+              {selectedCategory === 'all' ? 'New drop coming soon' : 'Nothing here yet'}
+            </h2>
+            <p>
+              {selectedCategory === 'all'
+                ? 'Follow @ivywear.eg to be first to know.'
+                : 'No products in this category right now.'}
+            </p>
+            {selectedCategory !== 'all' && (
+              <button type="button" className="btn btn--ghost" onClick={() => updateParam('category', 'all', 'all')}>
+                View all products
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="pcard-grid">
+            {visibleProducts.map((product, index) => (
+              <ProductCard key={product._id} product={product} eager={index < 4} />
+            ))}
+          </div>
         )}
       </div>
     </div>

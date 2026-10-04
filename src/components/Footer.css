@@ -1,6 +1,6 @@
 .footer {
   background: #000000;
-  border-top: 1px solid #333333;
+  border-top: 1px solid var(--color-border);
   margin-top: auto;
   padding: 3rem 2rem 2rem;
 }
@@ -51,7 +51,7 @@
   background: transparent;
   border: 2px solid #ffffff;
   color: #ffffff;
-  border-radius: 50px;
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
   font-weight: 600;
   text-transform: uppercase;

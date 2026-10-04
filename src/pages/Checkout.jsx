@@ -246,7 +246,8 @@ function Checkout() {
               price: price,
               mainImage: item.image ? item.image.split('/').pop() : '',
               quantity: item.quantity,
-              size: item.selectedSize || ''
+              size: item.selectedSize || '',
+              color: item.selectedColor || ''
             }
           }),
           paymentMethod: formData.paymentMethod,
@@ -640,11 +641,15 @@ function Checkout() {
             
             <div className="summary-items">
               {cartItems.map(item => (
-                <div key={item.id} className="summary-item">
+                <div key={item.lineId} className="summary-item">
                   <div className="summary-item-info">
                     <span className="summary-item-name">{item.name}</span>
                     <div className="summary-item-details">
-                      {item.selectedSize && <span className="summary-item-size">Size: {item.selectedSize}</span>}
+                      {(item.selectedSize || item.selectedColor) && (
+                        <span className="summary-item-size">
+                          {[item.selectedColor, item.selectedSize && `Size ${item.selectedSize}`].filter(Boolean).join(' · ')}
+                        </span>
+                      )}
                       <span className="summary-item-qty">Qty: {item.quantity}</span>
                     </div>
                   </div>

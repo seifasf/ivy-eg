@@ -69,7 +69,10 @@ export const sendOrderConfirmation = async (orderData) => {
   try {
     // Format order items for email
     const orderItemsText = orderData.items
-      .map(item => `${item.name} x${item.quantity} - ${item.price}`)
+      .map(item => {
+        const options = [item.selectedColor, item.selectedSize && `Size ${item.selectedSize}`].filter(Boolean).join(', ')
+        return `${item.name}${options ? ` (${options})` : ''} x${item.quantity} - ${item.price}`
+      })
       .join('\n')
 
     // Prepare email parameters

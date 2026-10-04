@@ -170,6 +170,7 @@ function TrackOrders() {
                       <div className="order-item-details">
                         <h4>{item.title}</h4>
                         <p>Quantity: {item.quantity}</p>
+                        {item.color && <p>Color: {item.color}</p>}
                         {item.size && <p>Size: {item.size}</p>}
                         <p className="order-item-price">{item.price.toLocaleString()} EGP</p>
                       </div>

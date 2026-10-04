@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 
 const CartContext = createContext()
+const STORAGE_KEY = 'ivyCart'
 
 export const useCart = () => {
   const context = useContext(CartContext)
@@ -10,53 +11,60 @@ export const useCart = () => {
   return context
 }
 
+// One cart line per product + size + color, so "Tee / M" and "Tee / L" stay separate
+export const cartLineId = (id, size = '', color = '') => `${id}::${size || ''}::${color || ''}`
+
+const toNumber = (price) => {
+  if (typeof price === 'number') return price
+  if (typeof price === 'string') return parseFloat(price.replace(/[,\sEGP]/g, '')) || 0
+  return 0
+}
+
+const loadCart = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    if (!Array.isArray(saved)) return []
+    return saved.map(item => ({
+      ...item,
+      lineId: item.lineId || cartLineId(item.id, item.selectedSize, item.selectedColor)
+    }))
+  } catch {
+    return []
+  }
+}
+
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([])
+  const [cartItems, setCartItems] = useState(loadCart)
 
-  // Load cart from localStorage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem('ivyCart')
-    if (savedCart) {
-      setCartItems(JSON.parse(savedCart))
-    }
-  }, [])
-
-  // Save cart to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('ivyCart', JSON.stringify(cartItems))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cartItems))
   }, [cartItems])
 
-  const addToCart = (product) => {
-    setCartItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.id === product.id)
-      
-      if (existingItem) {
-        // Increase quantity if item already exists
-        return prevItems.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
+  // product: { id, name, price, image, selectedSize?, selectedColor? }
+  const addToCart = (product, quantity = 1) => {
+    const lineId = cartLineId(product.id, product.selectedSize, product.selectedColor)
+    setCartItems(prevItems => {
+      const existing = prevItems.find(item => item.lineId === lineId)
+      if (existing) {
+        return prevItems.map(item =>
+          item.lineId === lineId ? { ...item, quantity: item.quantity + quantity } : item
         )
-      } else {
-        // Add new item with quantity 1
-        return [...prevItems, { ...product, quantity: 1 }]
       }
+      return [...prevItems, { ...product, lineId, quantity }]
     })
   }
 
-  const removeFromCart = (productId) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== productId))
+  const removeFromCart = (lineId) => {
+    setCartItems(prevItems => prevItems.filter(item => item.lineId !== lineId))
   }
 
-  const updateQuantity = (productId, newQuantity) => {
+  const updateQuantity = (lineId, newQuantity) => {
     if (newQuantity <= 0) {
-      removeFromCart(productId)
+      removeFromCart(lineId)
       return
     }
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === productId ? { ...item, quantity: newQuantity } : item
-      )
+    setCartItems(prevItems =>
+      prevItems.map(item => (item.lineId === lineId ? { ...item, quantity: newQuantity } : item))
     )
   }
 
@@ -64,24 +72,10 @@ export const CartProvider = ({ children }) => {
     setCartItems([])
   }
 
-  const getCartTotal = () => {
-    return cartItems.reduce((total, item) => {
-      // Handle both number and string price formats
-      let price
-      if (typeof item.price === 'number') {
-        price = item.price
-      } else if (typeof item.price === 'string') {
-        price = parseFloat(item.price.replace(/[,\sEGP]/g, '')) || 0
-      } else {
-        price = 0
-      }
-      return total + price * item.quantity
-    }, 0)
-  }
+  const getCartTotal = () =>
+    cartItems.reduce((total, item) => total + toNumber(item.price) * item.quantity, 0)
 
-  const getCartCount = () => {
-    return cartItems.reduce((count, item) => count + item.quantity, 0)
-  }
+  const getCartCount = () => cartItems.reduce((count, item) => count + item.quantity, 0)
 
   const value = {
     cartItems,
@@ -95,5 +89,3 @@ export const CartProvider = ({ children }) => {
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }
-
-

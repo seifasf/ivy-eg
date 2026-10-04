@@ -23,7 +23,7 @@
   align-items: center;
   margin-bottom: 2.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid #333333;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .cart-page-title {
@@ -35,7 +35,7 @@
 
 .cart-page-count {
   font-size: 1.125rem;
-  color: #b0b0b0;
+  color: var(--color-text-muted);
   font-weight: 500;
 }
 
@@ -43,9 +43,9 @@
 .empty-cart-page {
   text-align: center;
   padding: 4rem 2rem;
-  background: #1a1a1a;
-  border: 1px solid #333333;
-  border-radius: 12px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   max-width: 600px;
   margin: 0 auto;
 }
@@ -54,8 +54,8 @@
   width: 120px;
   height: 120px;
   margin: 0 auto 2rem;
-  background: #0a0a0a;
-  border: 1px solid #333333;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -72,7 +72,7 @@
 
 .empty-cart-page p {
   font-size: 1.125rem;
-  color: #b0b0b0;
+  color: var(--color-text-muted);
   margin-bottom: 2rem;
 }
 
@@ -84,7 +84,7 @@
   background: #ffffff;
   color: #000000;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -113,9 +113,9 @@
 }
 
 .cart-page-item {
-  background: #1a1a1a;
-  border: 1px solid #333333;
-  border-radius: 12px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 1.5rem;
   display: grid;
   grid-template-columns: auto 1fr auto auto;
@@ -131,9 +131,9 @@
 .cart-page-item-icon {
   width: 80px;
   height: 80px;
-  background: #0a0a0a;
-  border: 1px solid #333333;
-  border-radius: 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -156,7 +156,7 @@
 
 .cart-page-item-size {
   font-size: 0.875rem;
-  color: #b0b0b0;
+  color: var(--color-text-muted);
   margin: 0;
   font-weight: 500;
 }
@@ -172,19 +172,19 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: #0a0a0a;
-  border: 1px solid #333333;
-  border-radius: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 0.5rem 1rem;
 }
 
 .quantity-btn {
   width: 32px;
   height: 32px;
-  border: 1px solid #333333;
+  border: 1px solid var(--color-border);
   background: transparent;
   color: #ffffff;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: 1.25rem;
   display: flex;
   align-items: center;
@@ -210,7 +210,7 @@
 .cart-page-item-remove {
   width: 40px;
   height: 40px;
-  border: 1px solid #333333;
+  border: 1px solid var(--color-border);
   background: transparent;
   color: #ffffff;
   border-radius: 50%;
@@ -223,15 +223,15 @@
 }
 
 .cart-page-item-remove:hover {
-  background: #ff4757;
-  border-color: #ff4757;
+  background: var(--color-sale);
+  border-color: var(--color-sale);
 }
 
 /* Cart Summary */
 .cart-page-summary {
-  background: #1a1a1a;
-  border: 1px solid #333333;
-  border-radius: 12px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 2rem;
   height: fit-content;
   position: sticky;
@@ -261,13 +261,13 @@
 }
 
 .text-secondary {
-  color: #b0b0b0 !important;
+  color: var(--color-text-muted) !important;
   font-size: 0.875rem !important;
 }
 
 .cart-summary-divider {
   height: 1px;
-  background: #333333;
+  background: var(--color-border);
   margin: 1.5rem 0;
 }
 
@@ -292,7 +292,7 @@
   background: #ffffff;
   color: #000000;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -314,7 +314,7 @@
   background: transparent;
   color: #ffffff;
   border: 2px solid #ffffff;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -333,9 +333,9 @@
   width: 100%;
   padding: 0.875rem 2rem;
   background: transparent;
-  color: #ff4757;
-  border: 1px solid #ff4757;
-  border-radius: 8px;
+  color: var(--color-sale);
+  border: 1px solid var(--color-sale);
+  border-radius: var(--radius-md);
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -345,7 +345,7 @@
 }
 
 .btn-clear-cart:hover {
-  background: #ff4757;
+  background: var(--color-sale);
   color: #ffffff;
 }
 

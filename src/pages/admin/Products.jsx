@@ -16,6 +16,15 @@ import './Products.css'
 const MAX_EXTRA_IMAGES = 10
 const SIZE_OPTIONS = ['S', 'M', 'L', 'XL', 'XXL']
 const FALLBACK_IMAGE = '/IMGs/IVY-03.png'
+const MAX_COLORS = 20
+const COLOR_PRESETS = [
+  { name: 'Black', hex: '#000000' },
+  { name: 'White', hex: '#ffffff' },
+  { name: 'Grey', hex: '#8a8a8a' },
+  { name: 'Navy', hex: '#1f2a44' },
+  { name: 'Olive', hex: '#5b5f3a' },
+  { name: 'Beige', hex: '#d9c8a9' }
+]
 
 const emptyForm = {
   title: '',
@@ -25,6 +34,7 @@ const emptyForm = {
   category: '',
   stock: '',
   sizes: [],
+  colors: [],
   inStock: true
 }
 
@@ -47,6 +57,7 @@ function Products() {
   const [mainImage, setMainImage] = useState(null)
   const [existingImages, setExistingImages] = useState([])
   const [newImages, setNewImages] = useState([])
+  const [customColor, setCustomColor] = useState({ name: '', hex: '#000000' })
 
   useEffect(() => {
     fetchProducts()
@@ -98,7 +109,8 @@ function Products() {
       discountPrice: hasDiscount ? String(product.discountPrice) : '',
       category: product.category,
       stock: String(product.stock),
-      sizes: product.sizes || [],
+      sizes: (product.sizes || []).filter(size => SIZE_OPTIONS.includes(size)),
+      colors: product.colors || [],
       inStock: product.inStock
     })
     setMainImage({ file: null, preview: getImageUrl(product.mainImage) })
@@ -130,6 +142,29 @@ function Products() {
         ? prev.sizes.filter(s => s !== size)
         : [...prev.sizes, size]
     }))
+  }
+
+  const hasColor = (name) =>
+    formData.colors.some(c => c.name.toLowerCase() === name.trim().toLowerCase())
+
+  const addColor = (color) => {
+    const name = color.name.trim()
+    if (!name || hasColor(name) || formData.colors.length >= MAX_COLORS) return
+    setFormData(prev => ({ ...prev, colors: [...prev.colors, { name, hex: color.hex || '' }] }))
+  }
+
+  const togglePresetColor = (preset) => {
+    if (hasColor(preset.name)) removeColor(preset.name)
+    else addColor(preset)
+  }
+
+  const removeColor = (name) => {
+    setFormData(prev => ({ ...prev, colors: prev.colors.filter(c => c.name !== name) }))
+  }
+
+  const addCustomColor = () => {
+    addColor(customColor)
+    setCustomColor(prev => ({ ...prev, name: '' }))
   }
 
   const prepareFiles = async (files) => {
@@ -221,6 +256,7 @@ function Products() {
       formDataToSend.append('stock', formData.stock)
       formDataToSend.append('inStock', formData.inStock)
       formDataToSend.append('sizes', JSON.stringify(formData.sizes))
+      formDataToSend.append('colors', JSON.stringify(formData.colors))
 
       if (mainImage?.file) {
         formDataToSend.append('mainImage', mainImage.file)
@@ -384,6 +420,19 @@ function Products() {
                     <span className="no-sizes">No sizes specified</span>
                   )}
                 </div>
+
+                {product.colors?.length > 0 && (
+                  <div className="admin-color-dots">
+                    {product.colors.map(color => (
+                      <span
+                        key={color.name}
+                        className="admin-color-dot"
+                        style={color.hex ? { background: color.hex } : undefined}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="product-actions">
@@ -542,6 +591,75 @@ function Products() {
                         </label>
                       ))}
                     </div>
+                  </div>
+
+                  <div className="form-group full-width">
+                    <label>Colors (optional — shoppers must pick one if you add any)</label>
+                    <div className="admin-color-presets">
+                      {COLOR_PRESETS.map(preset => (
+                        <button
+                          key={preset.name}
+                          type="button"
+                          className={`admin-color-chip ${hasColor(preset.name) ? 'selected' : ''}`}
+                          onClick={() => togglePresetColor(preset)}
+                          aria-pressed={hasColor(preset.name)}
+                        >
+                          <span className="admin-color-dot" style={{ background: preset.hex }} />
+                          {preset.name}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="admin-color-custom">
+                      <input
+                        type="color"
+                        value={customColor.hex}
+                        onChange={(e) => setCustomColor(prev => ({ ...prev, hex: e.target.value }))}
+                        aria-label="Custom color"
+                      />
+                      <input
+                        type="text"
+                        value={customColor.name}
+                        onChange={(e) => setCustomColor(prev => ({ ...prev, name: e.target.value }))}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            addCustomColor()
+                          }
+                        }}
+                        maxLength={40}
+                        placeholder="Custom color name, e.g. Burgundy"
+                      />
+                      <button
+                        type="button"
+                        className="admin-color-add"
+                        onClick={addCustomColor}
+                        disabled={!customColor.name.trim() || hasColor(customColor.name) || formData.colors.length >= MAX_COLORS}
+                      >
+                        <HiPlus size={16} /> Add
+                      </button>
+                    </div>
+
+                    {formData.colors.length > 0 && (
+                      <div className="admin-color-selected">
+                        {formData.colors.map(color => (
+                          <span key={color.name} className="admin-color-chip selected">
+                            <span
+                              className="admin-color-dot"
+                              style={color.hex ? { background: color.hex } : undefined}
+                            />
+                            {color.name}
+                            <button
+                              type="button"
+                              onClick={() => removeColor(color.name)}
+                              aria-label={`Remove ${color.name}`}
+                            >
+                              <HiX size={14} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

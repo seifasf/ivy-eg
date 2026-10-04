@@ -1,5 +1,5 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { HiX, HiHome, HiShoppingCart } from 'react-icons/hi'
 import './CartPage.css'
@@ -8,12 +8,12 @@ function CartPage() {
   const navigate = useNavigate()
   const { cartItems, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart()
 
-  const handleQuantityChange = (id, change) => {
-    const item = cartItems.find(item => item.id === id)
+  const handleQuantityChange = (lineId, change) => {
+    const item = cartItems.find(item => item.lineId === lineId)
     if (item) {
       const newQuantity = item.quantity + change
       if (newQuantity > 0) {
-        updateQuantity(id, newQuantity)
+        updateQuantity(lineId, newQuantity)
       }
     }
   }
@@ -53,31 +53,25 @@ function CartPage() {
         <div className="cart-page-content">
           <div className="cart-page-items">
             {cartItems.map((item) => (
-              <div key={item.id} className="cart-page-item">
-                <div className="cart-page-item-icon">
-                  {item.image ? (
-                    <img 
-                      src={item.image} 
-                      alt={item.name}
-                      loading="lazy"
-                      decoding="async"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '10px' }}
-                      onError={(e) => {
-                        e.target.style.display = 'none'
-                        e.target.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: #ffffff;">📦</div>'
-                      }}
-                    />
-                  ) : item.icon ? (
-                    React.createElement(item.icon, { size: 32 })
-                  ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', color: '#ffffff' }}>📦</div>
-                  )}
-                </div>
-                
+              <div key={item.lineId} className="cart-page-item">
+                <Link to={`/products/${item.id}`} className="cart-page-item-icon">
+                  <img
+                    src={item.image || '/IMGs/IVY-03.png'}
+                    alt={item.name}
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => {
+                      if (!e.currentTarget.src.endsWith('/IMGs/IVY-03.png')) e.currentTarget.src = '/IMGs/IVY-03.png'
+                    }}
+                  />
+                </Link>
+
                 <div className="cart-page-item-details">
-                  <h4 className="cart-page-item-name">{item.name}</h4>
-                  {item.selectedSize && (
-                    <p className="cart-page-item-size">Size: {item.selectedSize}</p>
+                  <Link to={`/products/${item.id}`} className="cart-page-item-name">{item.name}</Link>
+                  {(item.selectedSize || item.selectedColor) && (
+                    <p className="cart-page-item-size">
+                      {[item.selectedColor, item.selectedSize && `Size ${item.selectedSize}`].filter(Boolean).join(' · ')}
+                    </p>
                   )}
                   <p className="cart-page-item-price">
                     {typeof item.price === 'number' 
@@ -88,7 +82,7 @@ function CartPage() {
 
                 <div className="cart-page-item-quantity">
                   <button 
-                    onClick={() => handleQuantityChange(item.id, -1)}
+                    onClick={() => handleQuantityChange(item.lineId, -1)}
                     className="quantity-btn"
                     aria-label="Decrease quantity"
                   >
@@ -96,7 +90,7 @@ function CartPage() {
                   </button>
                   <span className="quantity-value">{item.quantity}</span>
                   <button 
-                    onClick={() => handleQuantityChange(item.id, 1)}
+                    onClick={() => handleQuantityChange(item.lineId, 1)}
                     className="quantity-btn"
                     aria-label="Increase quantity"
                   >
@@ -105,7 +99,7 @@ function CartPage() {
                 </div>
 
                 <button 
-                  onClick={() => removeFromCart(item.id)}
+                  onClick={() => removeFromCart(item.lineId)}
                   className="cart-page-item-remove"
                   aria-label="Remove item"
                 >

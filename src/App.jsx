@@ -12,6 +12,8 @@ import ProtectedRoute from './components/admin/ProtectedRoute'
 
 // Page stylesheets share global class names, so they all load up front in this
 // order; only the page JavaScript below is split out.
+import './pages/Home.css'
+import './pages/Products.css'
 import './pages/Contact.css'
 import './pages/CartPage.css'
 import './pages/Checkout.css'
@@ -25,6 +27,7 @@ import './pages/admin/PromoCodes.css'
 import './pages/admin/Settings.css'
 
 // Loaded on demand so shoppers don't download checkout or admin code up front
+const ProductDetail = lazy(() => import('./pages/ProductDetail'))
 const Contact = lazy(() => import('./pages/Contact'))
 const CartPage = lazy(() => import('./pages/CartPage'))
 const Checkout = lazy(() => import('./pages/Checkout'))
@@ -68,6 +71,15 @@ function App() {
                 <Header />
                 <main className="main-content">
                   <Products />
+                </main>
+                <Footer />
+              </div>
+            } />
+            <Route path="/products/:id" element={
+              <div className="app">
+                <Header />
+                <main className="main-content">
+                  {page(<ProductDetail />)}
                 </main>
                 <Footer />
               </div>

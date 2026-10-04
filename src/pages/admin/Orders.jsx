@@ -287,7 +287,11 @@ function Orders() {
                     <div key={index} className="item-row">
                       <div className="item-details">
                         <span className="item-name">{item.title || item.name}</span>
-                        {item.size && <span className="item-size">Size: {item.size}</span>}
+                        {(item.color || item.size) && (
+                          <span className="item-size">
+                            {[item.color && `Color: ${item.color}`, item.size && `Size: ${item.size}`].filter(Boolean).join(' · ')}
+                          </span>
+                        )}
                       </div>
                       <div className="item-price-section">
                         <span className="item-qty">x{item.quantity}</span>

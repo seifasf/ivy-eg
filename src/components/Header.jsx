@@ -60,7 +60,7 @@ function Header() {
               <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
                 Home
               </Link>
-              <Link to="/products" className={location.pathname === '/products' ? 'active' : ''}>
+              <Link to="/products" className={location.pathname.startsWith('/products') ? 'active' : ''}>
                 Products
               </Link>
             </nav>
@@ -182,7 +182,7 @@ function Header() {
           </Link>
           <Link 
             to="/products" 
-            className={location.pathname === '/products' ? 'active' : ''}
+            className={location.pathname.startsWith('/products') ? 'active' : ''}
           >
             <span className="nav-number">02</span>
             <span className="nav-text">Products</span>

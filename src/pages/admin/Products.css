@@ -592,6 +592,110 @@
   font-weight: 600;
 }
 
+.admin-color-presets,
+.admin-color-selected,
+.admin-color-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-color-dots {
+  gap: 0.375rem;
+  margin-top: 0.75rem;
+}
+
+.admin-color-presets {
+  padding: 0.5rem 0;
+}
+
+.admin-color-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.875rem;
+  background: #1a1a1a;
+  border: 1px solid #333333;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.admin-color-chip:hover,
+.admin-color-chip.selected {
+  border-color: #ffffff;
+}
+
+.admin-color-chip.selected {
+  background: #252525;
+}
+
+.admin-color-chip button {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  margin-left: 0.125rem;
+  background: none;
+  border: 0;
+  color: #b0b0b0;
+  cursor: pointer;
+}
+
+.admin-color-chip button:hover {
+  color: #ff4757;
+}
+
+.admin-color-dot {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border-radius: 50%;
+  background: #333333;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+.admin-color-custom {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.form-group .admin-color-custom input[type="color"] {
+  width: 52px;
+  padding: 0.25rem;
+  cursor: pointer;
+}
+
+.form-group .admin-color-custom input[type="text"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-color-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 1rem;
+  background: #ffffff;
+  border: 0;
+  border-radius: 8px;
+  color: #000000;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-color-add:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.admin-color-selected {
+  margin-top: 0.75rem;
+}
+
 .image-preview-single {
   margin-top: 1rem;
   width: 200px;
