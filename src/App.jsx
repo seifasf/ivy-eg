@@ -30,6 +30,7 @@ import './pages/admin/Settings.css'
 const ProductDetail = lazy(() => import('./pages/ProductDetail'))
 const Contact = lazy(() => import('./pages/Contact'))
 const ReturnsPolicy = lazy(() => import('./pages/ReturnsPolicy'))
+const SizeGuidePage = lazy(() => import('./pages/SizeGuidePage'))
 const CartPage = lazy(() => import('./pages/CartPage'))
 const Checkout = lazy(() => import('./pages/Checkout'))
 const TrackOrders = lazy(() => import('./pages/TrackOrders'))
@@ -100,6 +101,15 @@ function App() {
                 <Header />
                 <main className="main-content">
                   {page(<ReturnsPolicy />)}
+                </main>
+                <Footer />
+              </div>
+            } />
+            <Route path="/size-guide" element={
+              <div className="app">
+                <Header />
+                <main className="main-content">
+                  {page(<SizeGuidePage />)}
                 </main>
                 <Footer />
               </div>

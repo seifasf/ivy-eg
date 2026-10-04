@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { HiMinus, HiPlus, HiCheck, HiTruck, HiCash, HiArrowLeft, HiShieldCheck } from 'react-icons/hi'
+import { HiMinus, HiPlus, HiCheck, HiTruck, HiCash, HiArrowLeft, HiShieldCheck, HiOutlineScale } from 'react-icons/hi'
 import { publicProductsAPI, getImageUrl } from '../services/api'
 import { useCart } from '../context/CartContext'
 import ProductCard from '../components/ProductCard'
+import SizeGuide from '../components/SizeGuide'
 import {
   effectivePrice,
   hasDiscount,
@@ -33,6 +34,8 @@ function ProductDetail() {
   const [quantity, setQuantity] = useState(1)
   const [showErrors, setShowErrors] = useState(false)
   const [added, setAdded] = useState(false)
+  const [showSizeGuide, setShowSizeGuide] = useState(false)
+  const closeSizeGuide = useCallback(() => setShowSizeGuide(false), [])
   const galleryRef = useRef(null)
 
   useEffect(() => {
@@ -268,8 +271,11 @@ function ProductDetail() {
 
             {sizes.length > 0 && (
               <fieldset className="pdp-option">
-                <legend className="pdp-option-label">
-                  Size <span className="pdp-option-value">{selectedSize || 'Select'}</span>
+                <legend className="pdp-option-label pdp-option-head">
+                  <span>Size <span className="pdp-option-value">{selectedSize || 'Select'}</span></span>
+                  <button type="button" className="pdp-size-guide" onClick={() => setShowSizeGuide(true)}>
+                    <HiOutlineScale size={16} /> Size guide
+                  </button>
                 </legend>
                 <div className="pdp-sizes">
                   {sizes.map(size => {
@@ -370,6 +376,13 @@ function ProductDetail() {
           </section>
         )}
       </div>
+
+      <SizeGuide
+        open={showSizeGuide}
+        onClose={closeSizeGuide}
+        availableSizes={sizes.filter(size => unitsAvailable(product, size) > 0)}
+        onSelectSize={soldOut ? undefined : chooseSize}
+      />
     </div>
   )
 }

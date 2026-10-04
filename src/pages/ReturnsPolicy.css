@@ -103,6 +103,11 @@
   font-size: var(--text-sm);
 }
 
+.pol-tip a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .pol-actions {
   display: flex;
   flex-wrap: wrap;

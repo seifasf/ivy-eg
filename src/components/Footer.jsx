@@ -48,6 +48,7 @@ function Footer() {
         </Link>
         
         <nav className="footer-links" aria-label="Help">
+          <Link to="/size-guide">Size Guide</Link>
           <Link to="/returns">Returns &amp; Exchanges</Link>
           <Link to="/track-orders">Track Order</Link>
         </nav>

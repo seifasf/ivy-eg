@@ -218,6 +218,39 @@
   text-transform: uppercase;
 }
 
+.pdp-option-head {
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.pdp-option-head > span {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.pdp-size-guide {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.pdp-size-guide:hover {
+  color: var(--color-text-muted);
+}
+
 .pdp-option-value {
   color: var(--color-text-muted);
   font-weight: 500;

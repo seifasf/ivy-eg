@@ -47,7 +47,10 @@ function ReturnsPolicy() {
           <li>Items sent back for a wrong size or color must be unworn, unwashed and in their original packaging.</li>
           <li>We'll review your request and reply with the next steps.</li>
         </ol>
-        <p className="pol-tip">Please double-check your size and color before placing your order.</p>
+        <p className="pol-tip">
+          Please double-check your size and color before placing your order.{' '}
+          <Link to="/size-guide">Check the size guide</Link>
+        </p>
       </section>
 
       <div className="pol-actions">
