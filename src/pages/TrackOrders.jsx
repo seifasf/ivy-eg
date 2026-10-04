@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useUser } from '../context/UserContext'
 import { userAPI, getImageUrl } from '../services/api'
 import { OrderSkeleton } from '../components/LoadingSkeleton'
@@ -87,8 +88,9 @@ function TrackOrders() {
         <div className="track-orders-container">
           <div className="not-authenticated">
             <HiShoppingBag size={64} style={{ color: '#b0b0b0', marginBottom: '20px' }} />
-            <h2>Please Sign In</h2>
-            <p>Sign in with Google to view your order history</p>
+            <h2>Check on your order</h2>
+            <p>Send us your order number and phone number and we'll update you on its status.</p>
+            <Link to="/contact" className="btn btn--primary">Contact us</Link>
           </div>
         </div>
       </div>

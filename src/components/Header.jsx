@@ -3,8 +3,14 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { HiShoppingBag, HiMenu, HiX, HiUser } from 'react-icons/hi'
 import { useCart } from '../context/CartContext'
 import { useUser } from '../context/UserContext'
-import { GoogleLogin } from '@react-oauth/google'
 import './Header.css'
+
+const NAV_LINKS = [
+  { to: '/', label: 'Home' },
+  { to: '/products', label: 'Products' },
+  { to: '/size-guide', label: 'Size Guide' },
+  { to: '/contact', label: 'Contact' }
+]
 
 function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -13,20 +19,24 @@ function Header() {
   const location = useLocation()
   const navigate = useNavigate()
   const { getCartCount } = useCart()
-  const { isAuthenticated, user, login, logout } = useUser()
+  const { isAuthenticated, user, logout } = useUser()
+  const cartCount = getCartCount()
+
+  const isActive = (to) => (to === '/' ? location.pathname === '/' : location.pathname.startsWith(to))
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50)
     }
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   useEffect(() => {
-    // Close mobile menu when route changes
+    // Close menus when route changes
     setIsMobileMenuOpen(false)
+    setShowUserMenu(false)
   }, [location])
 
   useEffect(() => {
@@ -56,95 +66,71 @@ function Header() {
         <div className="header-container">
           {/* Desktop Layout */}
           <div className="header-desktop">
-            <nav className="nav-left">
-              <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
-                Home
-              </Link>
-              <Link to="/products" className={location.pathname.startsWith('/products') ? 'active' : ''}>
-                Products
-              </Link>
-            </nav>
+            <div className="header-top">
+              <span aria-hidden="true" />
 
-            <Link to="/" className="logo-center">
-              <img src="/IMGs/IVY-03.png" alt="IVY" className="logo-img" />
-            </Link>
-
-            <nav className="nav-right">
-              <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>
-                Contact
+              <Link to="/" className="logo-center" aria-label="IVY home">
+                <img src="/IMGs/IVY-03.png" alt="IVY" className="logo-img" />
               </Link>
-              
-              {isAuthenticated ? (
-                <div className="user-menu-wrapper">
-                  <button 
-                    className="user-btn"
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                  >
-                    {user?.picture ? (
-                      <img src={user.picture} alt={user.fullName} className="user-avatar" />
-                    ) : (
-                      <HiUser size={20} />
-                    )}
-                  </button>
-                  {showUserMenu && (
-                    <div className="user-menu">
-                      <div className="user-menu-header">
-                        <p className="user-name">{user?.fullName}</p>
-                        <p className="user-email">{user?.email}</p>
+
+              <div className="header-actions">
+                {isAuthenticated && (
+                  <div className="user-menu-wrapper">
+                    <button
+                      className="user-btn"
+                      onClick={() => setShowUserMenu(!showUserMenu)}
+                      aria-label="Account"
+                      aria-expanded={showUserMenu}
+                    >
+                      {user?.picture ? (
+                        <img src={user.picture} alt={user.fullName} className="user-avatar" />
+                      ) : (
+                        <HiUser size={20} />
+                      )}
+                    </button>
+                    {showUserMenu && (
+                      <div className="user-menu">
+                        <div className="user-menu-header">
+                          <p className="user-name">{user?.fullName}</p>
+                          <p className="user-email">{user?.email}</p>
+                        </div>
+                        <Link to="/track-orders" className="user-menu-item">
+                          My Orders
+                        </Link>
+                        <button
+                          className="user-menu-item logout"
+                          onClick={() => {
+                            logout()
+                            setShowUserMenu(false)
+                          }}
+                        >
+                          Sign Out
+                        </button>
                       </div>
-                      <Link 
-                        to="/track-orders" 
-                        className="user-menu-item"
-                        onClick={() => setShowUserMenu(false)}
-                      >
-                        My Orders
-                      </Link>
-                      <button 
-                        className="user-menu-item logout"
-                        onClick={() => {
-                          logout()
-                          setShowUserMenu(false)
-                        }}
-                      >
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="google-login-wrapper">
-                  <GoogleLogin
-                    onSuccess={async (credentialResponse) => {
-                      const result = await login(credentialResponse.credential)
-                      if (!result.success) {
-                        alert(result.error || 'Failed to sign in. Please try again.')
-                      }
-                    }}
-                    onError={() => {
-                      // Google login failed
-                    }}
-                    useOneTap
-                    theme="outline"
-                    size="medium"
-                    text="signin_with"
-                    shape="rectangular"
-                  />
-                </div>
-              )}
-              
-              <button className="cart-btn" onClick={handleCartClick}>
-                <HiShoppingBag size={20} />
-                {getCartCount() > 0 && (
-                  <span className="cart-count">{getCartCount()}</span>
+                    )}
+                  </div>
                 )}
-              </button>
+
+                <button className="cart-btn" onClick={handleCartClick} aria-label={`Bag, ${cartCount} items`}>
+                  <HiShoppingBag size={20} />
+                  {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
+                </button>
+              </div>
+            </div>
+
+            <nav className="header-nav" aria-label="Main">
+              {NAV_LINKS.map(({ to, label }) => (
+                <Link key={to} to={to} className={isActive(to) ? 'active' : ''}>
+                  {label}
+                </Link>
+              ))}
             </nav>
           </div>
 
           {/* Mobile Layout */}
           <div className="header-mobile">
-            <button 
-              className="hamburger-btn" 
+            <button
+              className="hamburger-btn"
               onClick={toggleMobileMenu}
               aria-label="Toggle menu"
             >
@@ -155,11 +141,9 @@ function Header() {
               <img src="/IMGs/IVY-03.png" alt="IVY" className="logo-img" />
             </Link>
 
-            <button className="cart-btn-mobile" onClick={handleCartClick}>
+            <button className="cart-btn-mobile" onClick={handleCartClick} aria-label={`Bag, ${cartCount} items`}>
               <HiShoppingBag size={20} />
-              {getCartCount() > 0 && (
-                <span className="cart-count">{getCartCount()}</span>
-              )}
+              {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
             </button>
           </div>
         </div>
@@ -173,33 +157,18 @@ function Header() {
       {/* Mobile Menu */}
       <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
         <nav className="mobile-nav">
-          <Link 
-            to="/" 
-            className={location.pathname === '/' ? 'active' : ''}
-          >
-            <span className="nav-number">01</span>
-            <span className="nav-text">Home</span>
-          </Link>
-          <Link 
-            to="/products" 
-            className={location.pathname.startsWith('/products') ? 'active' : ''}
-          >
-            <span className="nav-number">02</span>
-            <span className="nav-text">Products</span>
-          </Link>
-          <Link 
-            to="/contact" 
-            className={location.pathname === '/contact' ? 'active' : ''}
-          >
-            <span className="nav-number">03</span>
-            <span className="nav-text">Contact</span>
-          </Link>
+          {NAV_LINKS.map(({ to, label }, i) => (
+            <Link key={to} to={to} className={isActive(to) ? 'active' : ''}>
+              <span className="nav-number">{String(i + 1).padStart(2, '0')}</span>
+              <span className="nav-text">{label}</span>
+            </Link>
+          ))}
           {isAuthenticated && (
-            <Link 
-              to="/track-orders" 
-              className={location.pathname === '/track-orders' ? 'active' : ''}
+            <Link
+              to="/track-orders"
+              className={isActive('/track-orders') ? 'active' : ''}
             >
-              <span className="nav-number">04</span>
+              <span className="nav-number">{String(NAV_LINKS.length + 1).padStart(2, '0')}</span>
               <span className="nav-text">My Orders</span>
             </Link>
           )}

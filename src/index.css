@@ -70,7 +70,7 @@
   /* Layout */
   --container: 1240px;
   --gutter: clamp(1rem, 4vw, 2.5rem);
-  --header-offset: 110px;
+  --header-offset: 120px;
 
   /* Legacy names kept for existing components */
   --white: #ffffff;

@@ -1,6 +1,5 @@
 import React, { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { GoogleOAuthProvider } from '@react-oauth/google'
 import { CartProvider } from './context/CartContext'
 import { AdminProvider } from './context/AdminContext'
 import { UserProvider } from './context/UserContext'
@@ -48,12 +47,8 @@ const page = (element) => <Suspense fallback={<PageFallback />}>{element}</Suspe
 
 import './App.css'
 
-// Google OAuth Client ID - Replace with your actual Google OAuth Client ID
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
-
 function App() {
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <Router>
         <AdminProvider>
           <UserProvider>
@@ -161,7 +156,6 @@ function App() {
           </UserProvider>
         </AdminProvider>
       </Router>
-    </GoogleOAuthProvider>
   )
 }
 
