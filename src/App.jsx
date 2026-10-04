@@ -29,6 +29,7 @@ import './pages/admin/Settings.css'
 // Loaded on demand so shoppers don't download checkout or admin code up front
 const ProductDetail = lazy(() => import('./pages/ProductDetail'))
 const Contact = lazy(() => import('./pages/Contact'))
+const ReturnsPolicy = lazy(() => import('./pages/ReturnsPolicy'))
 const CartPage = lazy(() => import('./pages/CartPage'))
 const Checkout = lazy(() => import('./pages/Checkout'))
 const TrackOrders = lazy(() => import('./pages/TrackOrders'))
@@ -90,6 +91,15 @@ function App() {
                 <Header />
                 <main className="main-content">
                   {page(<Contact />)}
+                </main>
+                <Footer />
+              </div>
+            } />
+            <Route path="/returns" element={
+              <div className="app">
+                <Header />
+                <main className="main-content">
+                  {page(<ReturnsPolicy />)}
                 </main>
                 <Footer />
               </div>

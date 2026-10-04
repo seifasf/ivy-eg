@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { HiMinus, HiPlus, HiCheck, HiTruck, HiCash, HiArrowLeft } from 'react-icons/hi'
+import { HiMinus, HiPlus, HiCheck, HiTruck, HiCash, HiArrowLeft, HiShieldCheck } from 'react-icons/hi'
 import { publicProductsAPI, getImageUrl } from '../services/api'
 import { useCart } from '../context/CartContext'
 import ProductCard from '../components/ProductCard'
@@ -340,6 +340,13 @@ function ProductDetail() {
             <ul className="pdp-perks">
               <li><HiCash size={18} /> Cash on delivery available</li>
               <li><HiTruck size={18} /> Delivery fee calculated by governorate at checkout</li>
+              <li>
+                <HiShieldCheck size={18} />
+                <span>
+                  Underwear can't be returned or exchanged, except for defects or a wrong size/color sent.{' '}
+                  <Link to="/returns">Policy</Link>
+                </span>
+              </li>
             </ul>
 
             {product.description && (

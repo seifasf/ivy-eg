@@ -388,6 +388,16 @@
   color: var(--color-text);
 }
 
+.pdp-perks li:has(> span) {
+  align-items: flex-start;
+}
+
+.pdp-perks a {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .pdp-section-label {
   margin-bottom: var(--space-3);
   font-size: var(--text-xs);

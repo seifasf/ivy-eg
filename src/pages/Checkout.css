@@ -118,6 +118,44 @@
   color: var(--color-sale);
 }
 
+.checkout-policy {
+  margin: 1.5rem 0 1.25rem;
+  padding: 1rem 1.125rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.checkout-policy-text {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.checkout-policy-agree {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  margin-top: 0.875rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.checkout-policy-agree input {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  flex: none;
+  accent-color: var(--color-text);
+  cursor: pointer;
+}
+
+.checkout-policy-agree a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* Promo Code Styles */
 .promo-input-wrapper {
   position: relative;

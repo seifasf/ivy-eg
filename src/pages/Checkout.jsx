@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useUser } from '../context/UserContext'
 import { sendOrderConfirmation } from '../services/emailService'
@@ -55,6 +55,7 @@ function Checkout() {
     paymentMethod: 'cod'
   })
   const [errors, setErrors] = useState({})
+  const [acceptedPolicy, setAcceptedPolicy] = useState(false)
   const [emailStatus, setEmailStatus] = useState(null)
   const [shippingFee, setShippingFee] = useState(0)
   const [placedTotal, setPlacedTotal] = useState(0)
@@ -199,6 +200,10 @@ function Checkout() {
 
     if (!formData.paymentMethod) {
       newErrors.paymentMethod = 'Please select a payment method'
+    }
+
+    if (!acceptedPolicy) {
+      newErrors.policy = 'Please agree to the returns & exchanges policy'
     }
 
     setErrors(newErrors)
@@ -625,6 +630,27 @@ function Checkout() {
                 </label>
               </div>
               {errors.paymentMethod && <span className="error-message">{errors.paymentMethod}</span>}
+            </div>
+
+            <div className="checkout-policy">
+              <p className="checkout-policy-text">
+                Underwear can't be returned or exchanged. Refunds are given only for a manufacturing defect,
+                and exchanges only if you receive a different size or color than you ordered.
+              </p>
+              <label className="checkout-policy-agree">
+                <input
+                  type="checkbox"
+                  checked={acceptedPolicy}
+                  onChange={(e) => {
+                    setAcceptedPolicy(e.target.checked)
+                    if (e.target.checked) setErrors(prev => ({ ...prev, policy: undefined }))
+                  }}
+                />
+                <span>
+                  I agree to the <Link to="/returns" target="_blank" rel="noopener">returns &amp; exchanges policy</Link>
+                </span>
+              </label>
+              {errors.policy && <span className="error-message">{errors.policy}</span>}
             </div>
 
             <button 

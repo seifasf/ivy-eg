@@ -1,0 +1,129 @@
+.pol {
+  padding-top: calc(var(--header-offset) + var(--space-10));
+  padding-bottom: var(--space-24);
+  max-width: 880px;
+}
+
+.pol-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-10);
+}
+
+.pol-title {
+  font-size: var(--text-3xl);
+}
+
+.pol-lead {
+  max-width: 60ch;
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+  text-wrap: pretty;
+}
+
+.pol-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-10);
+}
+
+.pol-card {
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.pol-card-title,
+.pol-section-title {
+  margin-bottom: var(--space-4);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.pol-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.pol-list li {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  line-height: 1.5;
+}
+
+.pol-list svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.pol-list .is-no {
+  color: var(--color-text-muted);
+}
+
+.pol-list .is-no svg {
+  color: var(--color-error);
+}
+
+.pol-list .is-yes svg {
+  color: var(--color-success);
+}
+
+.pol-section {
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--color-border);
+}
+
+.pol-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-left: var(--space-5);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.pol-steps li::marker {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.pol-tip {
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  border-left: 2px solid var(--color-text);
+  background: var(--color-surface);
+  font-size: var(--text-sm);
+}
+
+.pol-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-10);
+}
+
+@media (max-width: 768px) {
+  .pol {
+    padding-top: calc(88px + var(--space-6));
+  }
+
+  .pol-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pol-lead {
+    font-size: var(--text-base);
+  }
+
+  .pol-actions .btn {
+    flex: 1;
+  }
+}

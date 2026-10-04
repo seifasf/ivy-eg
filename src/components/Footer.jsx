@@ -47,6 +47,11 @@ function Footer() {
           <span>Contact Us</span>
         </Link>
         
+        <nav className="footer-links" aria-label="Help">
+          <Link to="/returns">Returns &amp; Exchanges</Link>
+          <Link to="/track-orders">Track Order</Link>
+        </nav>
+
         <p className="copyright">&copy; {currentYear} IVY. All rights reserved.</p>
       </div>
     </footer>
