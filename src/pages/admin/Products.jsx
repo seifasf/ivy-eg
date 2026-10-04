@@ -10,7 +10,27 @@ import {
   HiEyeOff
 } from 'react-icons/hi'
 import { productsAPI, getImageUrl } from '../../services/api'
+import { prepareImage, MAX_UPLOAD_BYTES } from '../../utils/imageCompress'
 import './Products.css'
+
+const MAX_EXTRA_IMAGES = 10
+const SIZE_OPTIONS = ['S', 'M', 'L', 'XL', 'XXL']
+const FALLBACK_IMAGE = '/IMGs/IVY-03.png'
+
+const emptyForm = {
+  title: '',
+  description: '',
+  price: '',
+  discountPrice: '',
+  category: '',
+  stock: '',
+  sizes: [],
+  inStock: true
+}
+
+const revoke = (url) => {
+  if (url && url.startsWith('blob:')) URL.revokeObjectURL(url)
+}
 
 function Products() {
   const [products, setProducts] = useState([])
@@ -18,27 +38,15 @@ function Products() {
   const [showModal, setShowModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [preparingImages, setPreparingImages] = useState(false)
   const [error, setError] = useState(null)
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    price: '',
-    discountPrice: '',
-    category: '',
-    stock: '',
-    sizes: [],
-    mainImage: null,
-    additionalImages: [],
-    inStock: true
-  })
-  const [imageFiles, setImageFiles] = useState({
-    mainImage: null,
-    additionalImages: []
-  })
-  const [imagePreviews, setImagePreviews] = useState({
-    mainImage: null,
-    additionalImages: []
-  })
+  const [formData, setFormData] = useState(emptyForm)
+  // mainImage: { file, preview }; existingImages: filenames already on the product;
+  // newImages: [{ file, preview }] picked in this session
+  const [mainImage, setMainImage] = useState(null)
+  const [existingImages, setExistingImages] = useState([])
+  const [newImages, setNewImages] = useState([])
 
   useEffect(() => {
     fetchProducts()
@@ -63,45 +71,45 @@ function Products() {
     product.category?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  const resetImages = () => {
+    revoke(mainImage?.preview)
+    newImages.forEach(img => revoke(img.preview))
+    setMainImage(null)
+    setExistingImages([])
+    setNewImages([])
+  }
+
   const openAddModal = () => {
+    resetImages()
     setEditingProduct(null)
-    setFormData({
-      title: '',
-      description: '',
-      price: '',
-      discountPrice: '',
-      category: '',
-      stock: '',
-      sizes: [],
-      inStock: true
-    })
-    setImageFiles({ mainImage: null, additionalImages: [] })
-    setImagePreviews({ mainImage: null, additionalImages: [] })
+    setFormData(emptyForm)
+    setError(null)
     setShowModal(true)
   }
 
   const openEditModal = (product) => {
+    resetImages()
     setEditingProduct(product)
+    const hasDiscount = product.discountPrice < product.price
     setFormData({
       title: product.title,
       description: product.description,
-      price: product.price.toString(),
-      discountPrice: product.discountPrice.toString(),
+      price: String(product.price),
+      discountPrice: hasDiscount ? String(product.discountPrice) : '',
       category: product.category,
-      stock: product.stock.toString(),
+      stock: String(product.stock),
       sizes: product.sizes || [],
       inStock: product.inStock
     })
-    // Show existing images as previews
-    setImagePreviews({
-      mainImage: getImageUrl(product.mainImage),
-      additionalImages: product.images.map(img => getImageUrl(img))
-    })
-    setImageFiles({ mainImage: null, additionalImages: [] })
+    setMainImage({ file: null, preview: getImageUrl(product.mainImage) })
+    setExistingImages(product.images || [])
+    setError(null)
     setShowModal(true)
   }
 
   const closeModal = () => {
+    if (saving) return
+    resetImages()
     setShowModal(false)
     setEditingProduct(null)
     setError(null)
@@ -124,86 +132,117 @@ function Products() {
     }))
   }
 
-  const handleMainImageChange = (e) => {
+  const prepareFiles = async (files) => {
+    const prepared = []
+    for (const file of files) {
+      const ready = await prepareImage(file)
+      if (ready.size > MAX_UPLOAD_BYTES) {
+        throw new Error(`"${file.name}" is larger than 10MB even after compression`)
+      }
+      prepared.push(ready)
+    }
+    return prepared
+  }
+
+  const handleMainImageChange = async (e) => {
     const file = e.target.files[0]
-    if (file) {
-      setImageFiles(prev => ({ ...prev, mainImage: file }))
-      setImagePreviews(prev => ({ ...prev, mainImage: URL.createObjectURL(file) }))
+    e.target.value = ''
+    if (!file) return
+    setError(null)
+    setPreparingImages(true)
+    try {
+      const [ready] = await prepareFiles([file])
+      revoke(mainImage?.preview)
+      setMainImage({ file: ready, preview: URL.createObjectURL(ready) })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setPreparingImages(false)
     }
   }
 
-  const handleAdditionalImagesChange = (e) => {
+  const handleAdditionalImagesChange = async (e) => {
     const files = Array.from(e.target.files)
-    if (files.length > 0) {
-      setImageFiles(prev => ({
-        ...prev,
-        additionalImages: [...prev.additionalImages, ...files]
-      }))
-      const previews = files.map(file => URL.createObjectURL(file))
-      setImagePreviews(prev => ({
-        ...prev,
-        additionalImages: [...prev.additionalImages, ...previews]
-      }))
+    e.target.value = ''
+    if (files.length === 0) return
+    setError(null)
+
+    const slots = MAX_EXTRA_IMAGES - existingImages.length - newImages.length
+    if (files.length > slots) {
+      setError(`A product can have up to ${MAX_EXTRA_IMAGES} extra images (${Math.max(slots, 0)} more allowed)`)
+      return
+    }
+
+    setPreparingImages(true)
+    try {
+      const ready = await prepareFiles(files)
+      setNewImages(prev => [...prev, ...ready.map(file => ({ file, preview: URL.createObjectURL(file) }))])
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setPreparingImages(false)
     }
   }
 
-  const removeAdditionalImage = (index) => {
-    setImageFiles(prev => ({
-      ...prev,
-      additionalImages: prev.additionalImages.filter((_, i) => i !== index)
-    }))
-    setImagePreviews(prev => ({
-      ...prev,
-      additionalImages: prev.additionalImages.filter((_, i) => i !== index)
-    }))
+  const removeExistingImage = (filename) => {
+    setExistingImages(prev => prev.filter(img => img !== filename))
+  }
+
+  const removeNewImage = (index) => {
+    setNewImages(prev => {
+      revoke(prev[index]?.preview)
+      return prev.filter((_, i) => i !== index)
+    })
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
     setError(null)
 
+    const price = parseFloat(formData.price)
+    const sale = formData.discountPrice === '' ? null : parseFloat(formData.discountPrice)
+    if (sale !== null && sale > price) {
+      setError('Sale price must be lower than the original price')
+      return
+    }
+    if (!editingProduct && !mainImage?.file) {
+      setError('Main image is required')
+      return
+    }
+
+    setSaving(true)
     try {
       const formDataToSend = new FormData()
-      formDataToSend.append('title', formData.title)
-      formDataToSend.append('description', formData.description)
+      formDataToSend.append('title', formData.title.trim())
+      formDataToSend.append('description', formData.description.trim())
       formDataToSend.append('price', formData.price)
-      formDataToSend.append('discountPrice', formData.discountPrice)
-      formDataToSend.append('category', formData.category)
+      formDataToSend.append('discountPrice', sale === null ? '' : formData.discountPrice)
+      formDataToSend.append('category', formData.category.trim())
       formDataToSend.append('stock', formData.stock)
       formDataToSend.append('inStock', formData.inStock)
-      
-      // Sizes array
-      formData.sizes.forEach(size => {
-        formDataToSend.append('sizes', size)
-      })
+      formDataToSend.append('sizes', JSON.stringify(formData.sizes))
 
-      // Images
-      if (imageFiles.mainImage) {
-        formDataToSend.append('mainImage', imageFiles.mainImage)
+      if (mainImage?.file) {
+        formDataToSend.append('mainImage', mainImage.file)
       }
-      imageFiles.additionalImages.forEach(file => {
-        formDataToSend.append('images', file)
-      })
+      newImages.forEach(img => formDataToSend.append('images', img.file))
 
       if (editingProduct) {
+        formDataToSend.append('oldImages', JSON.stringify(existingImages))
         await productsAPI.update(editingProduct._id, formDataToSend)
       } else {
-        if (!imageFiles.mainImage) {
-          setError('Main image is required')
-          setLoading(false)
-          return
-        }
         await productsAPI.create(formDataToSend)
       }
 
+      resetImages()
+      setShowModal(false)
+      setEditingProduct(null)
       await fetchProducts()
-      closeModal()
     } catch (error) {
       console.error('Error saving product:', error)
       setError(error.message || 'Failed to save product. Please check all fields and try again.')
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
 
@@ -223,13 +262,15 @@ function Products() {
   }
 
   const toggleActive = async (product) => {
+    const next = !product.inStock
+    setProducts(prev => prev.map(p => (p._id === product._id ? { ...p, inStock: next } : p)))
     try {
       const formData = new FormData()
-      formData.append('inStock', !product.inStock)
+      formData.append('inStock', next)
       await productsAPI.update(product._id, formData)
-      await fetchProducts()
     } catch (error) {
       console.error('Error updating product:', error)
+      setProducts(prev => prev.map(p => (p._id === product._id ? { ...p, inStock: product.inStock } : p)))
       setError(error.message || 'Failed to update product status. Please try again.')
     }
   }
@@ -272,7 +313,7 @@ function Products() {
 
       {/* Products Grid */}
       {error && <div className="error-message">{error}</div>}
-      {loading && <div className="loading">Loading products...</div>}
+      {loading && products.length === 0 && <div className="loading">Loading products...</div>}
       
       <div className="products-grid">
         {filteredProducts.length === 0 && !loading ? (
@@ -293,6 +334,9 @@ function Products() {
                     alt={product.title} 
                     loading="lazy"
                     decoding="async"
+                    onError={(e) => {
+                      if (!e.currentTarget.src.endsWith(FALLBACK_IMAGE)) e.currentTarget.src = FALLBACK_IMAGE
+                    }}
                   />
                 ) : (
                   <div className="no-image">
@@ -376,8 +420,8 @@ function Products() {
             </div>
 
             <form className="modal-body product-form" onSubmit={handleSubmit}>
-              {error && <div className="error-message">{error}</div>}
-              
+              {error && <div className="error-message" role="alert">{error}</div>}
+
               {/* Basic Info */}
               <div className="form-section">
                 <h3>Basic Information</h3>
@@ -390,6 +434,7 @@ function Products() {
                       value={formData.title}
                       onChange={handleChange}
                       required
+                      maxLength={150}
                       placeholder="e.g., Premium T-Shirt"
                     />
                   </div>
@@ -402,6 +447,7 @@ function Products() {
                       value={formData.category}
                       onChange={handleChange}
                       required
+                      maxLength={60}
                       placeholder="e.g., T-Shirts, Hoodies"
                     />
                   </div>
@@ -414,6 +460,7 @@ function Products() {
                       onChange={handleChange}
                       required
                       rows="3"
+                      maxLength={5000}
                       placeholder="Product description..."
                     />
                   </div>
@@ -439,16 +486,16 @@ function Products() {
                   </div>
 
                   <div className="form-group">
-                    <label>Discounted Price (EGP) *</label>
+                    <label>Sale Price (EGP) — optional</label>
                     <input
                       type="number"
                       name="discountPrice"
                       value={formData.discountPrice}
                       onChange={handleChange}
-                      required
                       min="0"
+                      max={formData.price || undefined}
                       step="0.01"
-                      placeholder="249"
+                      placeholder="Leave empty for no discount"
                     />
                   </div>
 
@@ -476,6 +523,7 @@ function Products() {
                       onChange={handleChange}
                       required
                       min="0"
+                      step="1"
                       placeholder="50"
                     />
                   </div>
@@ -483,7 +531,7 @@ function Products() {
                   <div className="form-group full-width">
                     <label>Available Sizes</label>
                     <div className="sizes-checkboxes">
-                      {['S', 'M', 'L', 'XL', 'XXL'].map(size => (
+                      {SIZE_OPTIONS.map(size => (
                         <label key={size} className="size-checkbox">
                           <input
                             type="checkbox"
@@ -504,38 +552,62 @@ function Products() {
                 
                 {/* Main Image */}
                 <div className="form-group">
-                  <label>Main Image * {editingProduct && '(Leave empty to keep current)'}</label>
+                  <label>Main Image * {editingProduct && '(choose a file only to replace it)'}</label>
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
                     onChange={handleMainImageChange}
-                    required={!editingProduct}
+                    disabled={preparingImages || saving}
                   />
-                  {imagePreviews.mainImage && (
+                  {mainImage?.preview && (
                     <div className="image-preview-single">
-                      <img src={imagePreviews.mainImage} alt="Main preview" />
+                      <img
+                        src={mainImage.preview}
+                        alt="Main preview"
+                        onError={(e) => {
+                          if (!e.currentTarget.src.endsWith(FALLBACK_IMAGE)) e.currentTarget.src = FALLBACK_IMAGE
+                        }}
+                      />
                     </div>
                   )}
                 </div>
 
                 {/* Additional Images */}
                 <div className="form-group">
-                  <label>Additional Images (Optional)</label>
+                  <label>
+                    Additional Images (optional, {existingImages.length + newImages.length}/{MAX_EXTRA_IMAGES})
+                  </label>
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
                     multiple
                     onChange={handleAdditionalImagesChange}
+                    disabled={preparingImages || saving || existingImages.length + newImages.length >= MAX_EXTRA_IMAGES}
                   />
-                  {imagePreviews.additionalImages.length > 0 && (
+                  {preparingImages && <p className="input-note">Optimizing images…</p>}
+                  {(existingImages.length > 0 || newImages.length > 0) && (
                     <div className="images-preview-grid">
-                      {imagePreviews.additionalImages.map((preview, index) => (
-                        <div key={index} className="image-preview">
-                          <img src={preview} alt={`Preview ${index + 1}`} />
+                      {existingImages.map(filename => (
+                        <div key={filename} className="image-preview">
+                          <img src={getImageUrl(filename)} alt="Product" loading="lazy" />
                           <button
                             type="button"
                             className="btn-remove-image"
-                            onClick={() => removeAdditionalImage(index)}
+                            onClick={() => removeExistingImage(filename)}
+                            aria-label="Remove image"
+                          >
+                            <HiX size={16} />
+                          </button>
+                        </div>
+                      ))}
+                      {newImages.map((img, index) => (
+                        <div key={img.preview} className="image-preview">
+                          <img src={img.preview} alt={`New image ${index + 1}`} />
+                          <button
+                            type="button"
+                            className="btn-remove-image"
+                            onClick={() => removeNewImage(index)}
+                            aria-label="Remove image"
                           >
                             <HiX size={16} />
                           </button>
@@ -564,11 +636,11 @@ function Products() {
 
               {/* Submit */}
               <div className="form-actions">
-                <button type="button" className="btn-cancel" onClick={closeModal} disabled={loading}>
+                <button type="button" className="btn-cancel" onClick={closeModal} disabled={saving}>
                   Cancel
                 </button>
-                <button type="submit" className="btn-save" disabled={loading}>
-                  {loading ? 'Saving...' : (editingProduct ? 'Update Product' : 'Add Product')}
+                <button type="submit" className="btn-save" disabled={saving || preparingImages}>
+                  {saving ? 'Saving...' : preparingImages ? 'Optimizing images…' : (editingProduct ? 'Update Product' : 'Add Product')}
                 </button>
               </div>
             </form>
