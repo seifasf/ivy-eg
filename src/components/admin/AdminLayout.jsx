@@ -10,7 +10,8 @@ import {
   HiLogout,
   HiMenu,
   HiX,
-  HiUser
+  HiUser,
+  HiChartBar
 } from 'react-icons/hi'
 import './AdminLayout.css'
 
@@ -34,6 +35,7 @@ function AdminLayout() {
 
   const menuItems = [
     { path: '/admin/dashboard', icon: HiHome, label: 'Dashboard' },
+    { path: '/admin/analytics', icon: HiChartBar, label: 'Analytics' },
     { path: '/admin/orders', icon: HiShoppingCart, label: 'Orders' },
     { path: '/admin/products', icon: HiShoppingBag, label: 'Products' },
     { path: '/admin/promocodes', icon: HiTag, label: 'Promo Codes' },

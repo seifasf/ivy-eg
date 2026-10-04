@@ -9,11 +9,14 @@ import {
   hasDiscount,
   discountPercent,
   formatEGP,
-  handleImageError
+  handleImageError,
+  isSoldOut,
+  unitsAvailable
 } from '../utils/product'
 import './ProductDetail.css'
 
 const MAX_QUANTITY = 10
+const LOW_STOCK = 3
 const SIZE_PATTERN = /^[A-Z0-9][A-Z0-9 ./-]{0,19}$/i
 
 function ProductDetail() {
@@ -106,10 +109,21 @@ function ProductDetail() {
 
   const colors = product.colors || []
   const sizes = (product.sizes || []).filter(size => SIZE_PATTERN.test(size))
-  const soldOut = !product.inStock
+  const soldOut = isSoldOut(product)
   const needsColor = colors.length > 0 && !selectedColor
   const needsSize = sizes.length > 0 && !selectedSize
   const price = effectivePrice(product)
+  const available = needsSize ? Infinity : unitsAvailable(product, selectedSize)
+  const maxQuantity = Math.max(1, Math.min(MAX_QUANTITY, available))
+  const lowStockNote = !soldOut && !needsSize && available > 0 && available <= LOW_STOCK
+    ? `Only ${available} left${selectedSize ? ` in ${selectedSize}` : ''}`
+    : ''
+
+  const chooseSize = (size) => {
+    setSelectedSize(size)
+    setShowErrors(false)
+    setQuantity(q => Math.max(1, Math.min(q, MAX_QUANTITY, unitsAvailable(product, size))))
+  }
 
   const addSelection = () => {
     if (needsColor || needsSize) {
@@ -258,18 +272,22 @@ function ProductDetail() {
                   Size <span className="pdp-option-value">{selectedSize || 'Select'}</span>
                 </legend>
                 <div className="pdp-sizes">
-                  {sizes.map(size => (
-                    <button
-                      key={size}
-                      type="button"
-                      className={`pdp-size ${selectedSize === size ? 'is-selected' : ''}`}
-                      onClick={() => { setSelectedSize(size); setShowErrors(false) }}
-                      aria-pressed={selectedSize === size}
-                      disabled={soldOut}
-                    >
-                      {size}
-                    </button>
-                  ))}
+                  {sizes.map(size => {
+                    const sizeSoldOut = unitsAvailable(product, size) <= 0
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        className={`pdp-size ${selectedSize === size ? 'is-selected' : ''} ${sizeSoldOut ? 'is-sold-out' : ''}`}
+                        onClick={() => chooseSize(size)}
+                        aria-pressed={selectedSize === size}
+                        aria-label={sizeSoldOut ? `${size}, sold out` : size}
+                        disabled={soldOut || sizeSoldOut}
+                      >
+                        {size}
+                      </button>
+                    )
+                  })}
                 </div>
                 {showErrors && needsSize && <p className="pdp-error" role="alert">Please choose a size</p>}
               </fieldset>
@@ -290,13 +308,14 @@ function ProductDetail() {
                   <span aria-live="polite">{quantity}</span>
                   <button
                     type="button"
-                    onClick={() => setQuantity(q => Math.min(MAX_QUANTITY, q + 1))}
-                    disabled={quantity >= MAX_QUANTITY}
+                    onClick={() => setQuantity(q => Math.min(maxQuantity, q + 1))}
+                    disabled={quantity >= maxQuantity}
                     aria-label="Increase quantity"
                   >
                     <HiPlus size={14} />
                   </button>
                 </div>
+                {lowStockNote && <p className="pdp-low-stock">{lowStockNote}</p>}
               </div>
             )}
 

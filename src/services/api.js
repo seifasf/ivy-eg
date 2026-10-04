@@ -185,7 +185,8 @@ export const userAPI = {
 // Dashboard APIs (with caching)
 export const dashboardAPI = {
   getStats: () => apiCall('/dashboard/stats', {}, true),
-  getRecentOrders: (limit = 5) => apiCall(`/dashboard/recent-orders?limit=${limit}`, {}, true)
+  getRecentOrders: (limit = 5) => apiCall(`/dashboard/recent-orders?limit=${limit}`, {}, true),
+  getAnalytics: (range = '30') => apiCall(`/dashboard/analytics?range=${range}`)
 }
 
 // Orders APIs (Checkout endpoints)
@@ -207,7 +208,11 @@ export const ordersAPI = {
 
 // Products APIs
 export const productsAPI = {
-  getAll: () => apiCall('/products'),
+  // Includes cost prices; older backends without this route get the public list
+  getAll: () => apiCall('/products/admin/all').catch((error) => {
+    if (error.status === 404) return apiCall('/products')
+    throw error
+  }),
   getById: (id) => apiCall(`/products/${id}`),
   
   // Admin-only endpoints (with multipart/form-data for images)

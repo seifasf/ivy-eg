@@ -14,7 +14,9 @@ import { prepareImage, MAX_UPLOAD_BYTES } from '../../utils/imageCompress'
 import './Products.css'
 
 const MAX_EXTRA_IMAGES = 10
-const SIZE_OPTIONS = ['S', 'M', 'L', 'XL', 'XXL']
+const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL']
+const LOW_STOCK = 3
+const MAX_DESCRIPTION = 5000
 const FALLBACK_IMAGE = '/IMGs/IVY-03.png'
 const MAX_COLORS = 20
 const COLOR_PRESETS = [
@@ -31,12 +33,28 @@ const emptyForm = {
   description: '',
   price: '',
   discountPrice: '',
+  costPrice: '',
   category: '',
   stock: '',
   sizes: [],
+  // units per selected size, kept as input strings: { M: '12' }
+  sizeStock: {},
   colors: [],
   inStock: true
 }
+
+const toNumber = (value) => {
+  const n = parseFloat(value)
+  return Number.isFinite(n) ? n : 0
+}
+
+const salePriceOf = (price, discountPrice) => {
+  const sale = toNumber(discountPrice)
+  return discountPrice !== '' && sale > 0 && sale < toNumber(price) ? sale : toNumber(price)
+}
+
+const allocatedUnits = (sizes, sizeStock) =>
+  sizes.reduce((sum, size) => sum + (parseInt(sizeStock[size], 10) || 0), 0)
 
 const revoke = (url) => {
   if (url && url.startsWith('blob:')) URL.revokeObjectURL(url)
@@ -102,14 +120,18 @@ function Products() {
     resetImages()
     setEditingProduct(product)
     const hasDiscount = product.discountPrice < product.price
+    const sizes = (product.sizes || []).filter(size => SIZE_OPTIONS.includes(size))
+    const savedUnits = Object.fromEntries((product.sizeStock || []).map(line => [line.size, String(line.stock)]))
     setFormData({
       title: product.title,
       description: product.description,
       price: String(product.price),
       discountPrice: hasDiscount ? String(product.discountPrice) : '',
+      costPrice: product.costPrice ? String(product.costPrice) : '',
       category: product.category,
       stock: String(product.stock),
-      sizes: (product.sizes || []).filter(size => SIZE_OPTIONS.includes(size)),
+      sizes,
+      sizeStock: Object.fromEntries(sizes.map(size => [size, savedUnits[size] ?? ''])),
       colors: product.colors || [],
       inStock: product.inStock
     })
@@ -136,12 +158,38 @@ function Products() {
   }
 
   const handleSizeToggle = (size) => {
-    setFormData(prev => ({
-      ...prev,
-      sizes: prev.sizes.includes(size)
-        ? prev.sizes.filter(s => s !== size)
-        : [...prev.sizes, size]
-    }))
+    setFormData(prev => {
+      const removing = prev.sizes.includes(size)
+      const sizeStock = { ...prev.sizeStock }
+      if (removing) delete sizeStock[size]
+      else sizeStock[size] = ''
+      return {
+        ...prev,
+        sizes: removing
+          ? prev.sizes.filter(s => s !== size)
+          : SIZE_OPTIONS.filter(s => s === size || prev.sizes.includes(s)),
+        sizeStock
+      }
+    })
+  }
+
+  const handleSizeUnitsChange = (size, value) => {
+    if (value !== '' && !/^\d+$/.test(value)) return
+    setFormData(prev => ({ ...prev, sizeStock: { ...prev.sizeStock, [size]: value } }))
+  }
+
+  const splitEvenly = () => {
+    setFormData(prev => {
+      const total = parseInt(prev.stock, 10) || 0
+      const count = prev.sizes.length
+      if (!count) return prev
+      const base = Math.floor(total / count)
+      const extra = total % count
+      return {
+        ...prev,
+        sizeStock: Object.fromEntries(prev.sizes.map((size, i) => [size, String(base + (i < extra ? 1 : 0))]))
+      }
+    })
   }
 
   const hasColor = (name) =>
@@ -244,6 +292,12 @@ function Products() {
       setError('Main image is required')
       return
     }
+    const totalStock = parseInt(formData.stock, 10) || 0
+    const allocated = allocatedUnits(formData.sizes, formData.sizeStock)
+    if (formData.sizes.length > 0 && allocated !== totalStock) {
+      setError(`Units per size add up to ${allocated}, but total stock is ${totalStock}. They must match.`)
+      return
+    }
 
     setSaving(true)
     try {
@@ -255,7 +309,11 @@ function Products() {
       formDataToSend.append('category', formData.category.trim())
       formDataToSend.append('stock', formData.stock)
       formDataToSend.append('inStock', formData.inStock)
+      formDataToSend.append('costPrice', formData.costPrice === '' ? '0' : formData.costPrice)
       formDataToSend.append('sizes', JSON.stringify(formData.sizes))
+      formDataToSend.append('sizeStock', JSON.stringify(
+        formData.sizes.map(size => ({ size, stock: parseInt(formData.sizeStock[size], 10) || 0 }))
+      ))
       formDataToSend.append('colors', JSON.stringify(formData.colors))
 
       if (mainImage?.file) {
@@ -310,6 +368,9 @@ function Products() {
       setError(error.message || 'Failed to update product status. Please try again.')
     }
   }
+
+  const sizeMismatch = formData.sizes.length > 0 &&
+    allocatedUnits(formData.sizes, formData.sizeStock) !== (parseInt(formData.stock, 10) || 0)
 
   const calculateDiscount = (price, discountPrice) => {
     if (discountPrice >= price) return 0
@@ -410,7 +471,17 @@ function Products() {
                 </div>
 
                 <div className="product-sizes">
-                  {product.sizes && product.sizes.length > 0 ? (
+                  {product.sizeStock?.length > 0 ? (
+                    product.sizeStock.map(line => (
+                      <div
+                        key={line.size}
+                        className={`size-badge ${line.stock === 0 ? 'is-empty' : line.stock <= LOW_STOCK ? 'is-low' : ''}`}
+                        title={`${line.stock} left in ${line.size}`}
+                      >
+                        {line.size} · {line.stock}
+                      </div>
+                    ))
+                  ) : product.sizes && product.sizes.length > 0 ? (
                     product.sizes.map(size => (
                       <div key={size} className="size-badge">
                         {size}
@@ -418,6 +489,23 @@ function Products() {
                     ))
                   ) : (
                     <span className="no-sizes">No sizes specified</span>
+                  )}
+                </div>
+
+                <div className="product-margin">
+                  {product.costPrice > 0 ? (() => {
+                    const sale = product.discountPrice < product.price ? product.discountPrice : product.price
+                    const profit = sale - product.costPrice
+                    return (
+                      <>
+                        <span>Cost {product.costPrice.toLocaleString()} EGP</span>
+                        <span className={profit < 0 ? 'is-loss' : 'is-profit'}>
+                          {profit >= 0 ? '+' : ''}{profit.toLocaleString()} EGP / piece
+                        </span>
+                      </>
+                    )
+                  })() : (
+                    <span className="is-missing">No cost set: edit to add it</span>
                   )}
                 </div>
 
@@ -508,10 +596,13 @@ function Products() {
                       value={formData.description}
                       onChange={handleChange}
                       required
-                      rows="3"
-                      maxLength={5000}
-                      placeholder="Product description..."
+                      rows="6"
+                      maxLength={MAX_DESCRIPTION}
+                      placeholder={'Fabric, fit and care, e.g.\n100% cotton, 240 GSM\nRelaxed fit, true to size\nMachine wash cold'}
                     />
+                    <p className="input-note">
+                      Shown on the product page; new lines are kept. {formData.description.length}/{MAX_DESCRIPTION}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -556,6 +647,35 @@ function Products() {
                       </div>
                     </div>
                   )}
+
+                  <div className="form-group">
+                    <label>Cost per piece (EGP) *</label>
+                    <input
+                      type="number"
+                      name="costPrice"
+                      value={formData.costPrice}
+                      onChange={handleChange}
+                      required
+                      min="0"
+                      step="0.01"
+                      placeholder="What one piece costs you"
+                    />
+                    <p className="input-note">Private: only admins see this. Used for profit analytics.</p>
+                  </div>
+
+                  {formData.price && formData.costPrice !== '' && (() => {
+                    const sale = salePriceOf(formData.price, formData.discountPrice)
+                    const profit = sale - toNumber(formData.costPrice)
+                    const margin = sale > 0 ? Math.round((profit / sale) * 100) : 0
+                    return (
+                      <div className="form-group">
+                        <label>Profit per piece</label>
+                        <div className={`final-price-display ${profit < 0 ? 'is-loss' : ''}`}>
+                          {profit.toLocaleString()} EGP · {margin}% margin
+                        </div>
+                      </div>
+                    )
+                  })()}
                 </div>
               </div>
 
@@ -592,6 +712,43 @@ function Products() {
                       ))}
                     </div>
                   </div>
+
+                  {formData.sizes.length > 0 && (() => {
+                    const total = parseInt(formData.stock, 10) || 0
+                    const allocated = allocatedUnits(formData.sizes, formData.sizeStock)
+                    const remaining = total - allocated
+                    return (
+                      <div className="form-group full-width">
+                        <div className="size-stock-head">
+                          <label>Units per size</label>
+                          <button type="button" className="size-stock-split" onClick={splitEvenly} disabled={!total}>
+                            Split evenly
+                          </button>
+                        </div>
+                        <div className="size-stock-grid">
+                          {formData.sizes.map(size => (
+                            <label key={size} className="size-stock-field">
+                              <span>{size}</span>
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                value={formData.sizeStock[size] ?? ''}
+                                onChange={(e) => handleSizeUnitsChange(size, e.target.value)}
+                                placeholder="0"
+                                aria-label={`Units in size ${size}`}
+                              />
+                            </label>
+                          ))}
+                        </div>
+                        <p className={`size-stock-status ${remaining === 0 ? 'is-ok' : 'is-off'}`} role="status">
+                          {allocated} of {total} units assigned
+                          {remaining > 0 && ` · ${remaining} still to assign`}
+                          {remaining < 0 && ` · ${-remaining} too many`}
+                          {remaining === 0 && ' · matches total stock'}
+                        </p>
+                      </div>
+                    )
+                  })()}
 
                   <div className="form-group full-width">
                     <label>Colors (optional — shoppers must pick one if you add any)</label>
@@ -757,7 +914,7 @@ function Products() {
                 <button type="button" className="btn-cancel" onClick={closeModal} disabled={saving}>
                   Cancel
                 </button>
-                <button type="submit" className="btn-save" disabled={saving || preparingImages}>
+                <button type="submit" className="btn-save" disabled={saving || preparingImages || sizeMismatch}>
                   {saving ? 'Saving...' : preparingImages ? 'Optimizing images…' : (editingProduct ? 'Update Product' : 'Add Product')}
                 </button>
               </div>

@@ -241,6 +241,134 @@
   text-decoration: line-through;
 }
 
+.product-sizes {
+  flex-wrap: wrap;
+}
+
+.size-badge.is-low {
+  border-color: #ff9f43;
+  color: #ff9f43;
+}
+
+.size-badge.is-empty {
+  border-color: #ff475760;
+  color: #ff4757;
+  text-decoration: line-through;
+}
+
+.product-margin {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #333333;
+  font-size: 0.85rem;
+  color: #b0b0b0;
+}
+
+.product-margin .is-profit {
+  color: #00d2d3;
+  font-weight: 600;
+}
+
+.product-margin .is-loss,
+.final-price-display.is-loss {
+  color: #ff4757;
+  border-color: #ff4757;
+  background: #ff475720;
+}
+
+.product-margin .is-loss {
+  background: none;
+  font-weight: 600;
+}
+
+.product-margin .is-missing {
+  color: #ff9f43;
+  font-style: italic;
+}
+
+.input-note {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: #8a8a8a;
+}
+
+.size-stock-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.size-stock-split {
+  padding: 0.35rem 0.75rem;
+  background: transparent;
+  border: 1px solid #333333;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.size-stock-split:hover:not(:disabled) {
+  border-color: #ffffff;
+}
+
+.size-stock-split:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.size-stock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 0.5rem;
+}
+
+.size-stock-field {
+  display: flex;
+  align-items: center;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0a0a0a;
+}
+
+.size-stock-field span {
+  min-width: 44px;
+  padding: 0 0.6rem;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  background: #1a1a1a;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.form-group .size-stock-field input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.size-stock-status {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.size-stock-status.is-ok {
+  color: #00d2d3;
+}
+
+.size-stock-status.is-off {
+  color: #ff9f43;
+}
+
 .product-actions {
   display: flex;
   gap: 0.5rem;

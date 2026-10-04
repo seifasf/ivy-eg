@@ -302,6 +302,18 @@
   cursor: not-allowed;
 }
 
+.pdp-size.is-sold-out {
+  text-decoration: line-through;
+  background:
+    linear-gradient(to top right, transparent calc(50% - 0.5px), var(--color-border-strong) 50%, transparent calc(50% + 0.5px));
+}
+
+.pdp-low-stock {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-warning);
+}
+
 .pdp-error {
   font-size: var(--text-sm);
   color: var(--color-error);

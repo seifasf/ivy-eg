@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { getImageUrl } from '../services/api'
-import { hasDiscount, discountPercent, formatEGP, handleImageError } from '../utils/product'
+import { hasDiscount, discountPercent, formatEGP, handleImageError, isSoldOut } from '../utils/product'
 import './ProductCard.css'
 
 const MAX_SWATCHES = 5
@@ -9,7 +9,7 @@ const MAX_SWATCHES = 5
 function ProductCard({ product, eager = false }) {
   const secondImage = product.images?.[0]
   const colors = product.colors || []
-  const soldOut = !product.inStock
+  const soldOut = isSoldOut(product)
 
   return (
     <Link to={`/products/${product._id}`} className={`pcard ${soldOut ? 'is-sold-out' : ''}`}>

@@ -39,6 +39,7 @@ const Orders = lazy(() => import('./pages/admin/Orders'))
 const AdminProducts = lazy(() => import('./pages/admin/Products'))
 const PromoCodes = lazy(() => import('./pages/admin/PromoCodes'))
 const Settings = lazy(() => import('./pages/admin/Settings'))
+const Analytics = lazy(() => import('./pages/admin/Analytics'))
 
 const PageFallback = () => <div className="page-loading" aria-busy="true" />
 const page = (element) => <Suspense fallback={<PageFallback />}>{element}</Suspense>
@@ -129,6 +130,7 @@ function App() {
               </ProtectedRoute>
             }>
               <Route path="dashboard" element={page(<Dashboard />)} />
+              <Route path="analytics" element={page(<Analytics />)} />
               <Route path="orders" element={page(<Orders />)} />
               <Route path="products" element={page(<AdminProducts />)} />
               <Route path="promocodes" element={page(<PromoCodes />)} />

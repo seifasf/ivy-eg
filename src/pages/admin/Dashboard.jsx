@@ -167,7 +167,7 @@ function Dashboard() {
             <p className="stat-label">Total Revenue</p>
             <h3 className="stat-value">{stats.totalRevenue.toLocaleString()} EGP</h3>
             <p className="stat-trend">
-              <span>Total revenue from delivered orders</span>
+              <span>All orders except cancelled · <a href="/admin/analytics">See analytics →</a></span>
             </p>
           </div>
         </div>
